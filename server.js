@@ -381,6 +381,7 @@ app.get('/api/watch', (req, res) => {
   let watcher;
   try {
     watcher = fs.watch(dir, { persistent: false }, (eventType, filename) => {
+      if (filename === SETTINGS_FILE) return;   // ignore our own settings writes
       res.write(`data: ${JSON.stringify({ event: eventType, filename })}\n\n`);
     });
   } catch (e) {
