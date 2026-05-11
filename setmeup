@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+echo "🐬 Dolphin Lite Web — setup"
+echo "────────────────────────"
+
+# Check for Node.js
+if ! command -v node &>/dev/null; then
+  echo "❌  Node.js is not installed. Please install Node.js (https://nodejs.org) and re-run."
+  exit 1
+fi
+echo "✔  Node.js $(node --version)"
+
+# Check for npm
+if ! command -v npm &>/dev/null; then
+  echo "❌  npm is not installed. Please install npm and re-run."
+  exit 1
+fi
+echo "✔  npm $(npm --version)"
+
+# Install / refresh node_modules
+if [ ! -d node_modules ]; then
+  echo "📦  node_modules not found — running npm install…"
+  npm install
+else
+  # Check if package.json is newer than node_modules (i.e. deps may be stale)
+  if [ package.json -nt node_modules ]; then
+    echo "📦  package.json has changed — running npm install…"
+    npm install
+  else
+    echo "✔  node_modules is up to date"
+  fi
+fi
+
+echo "✔  nodemon $("$SCRIPT_DIR/node_modules/.bin/nodemon" --version)"
+
+echo ""
+echo "✅  Setup complete. Run ./runme to start."

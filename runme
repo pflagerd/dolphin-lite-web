@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+set -e
+
+INVOKE_DIR="$PWD"   # capture before cd changes it
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+# ── 1. Resolve start directory ────────────────────────────────────────────────
+if [ -n "$1" ] && [ -d "$1" ]; then
+  export START_DIR="$(cd "$1" && pwd)"
+else
+  export START_DIR="$INVOKE_DIR"
+fi
+
+# ── 2. Ensure environment is ready ───────────────────────────────────────────
+"$SCRIPT_DIR/setmeup"
+echo ""
+
+# ── 3. Pick a random unprivileged port (3000–9999) ───────────────────────────
+export PORT=$(( RANDOM % 7000 + 3000 ))
+URL="http://localhost:${PORT}"
+
+echo "🐬 Dolphin Lite Web — starting"
+echo "────────────────────────────"
+echo "  Dir  : ${START_DIR}"
+echo "  Port : ${PORT}"
+echo "  URL  : ${URL}"
+echo ""
+
+# ── 4. Read saved window geometry from .dolphin-lite-web.json ─────────────────────
+WIN_W=1280; WIN_H=900; WIN_X=0; WIN_Y=0
+SETTINGS_FILE="$START_DIR/.dolphin-lite-web.json"
+if [ -f "$SETTINGS_FILE" ]; then
+  read -r WIN_W WIN_H WIN_X WIN_Y < <(
+    SETTINGS_PATH="$SETTINGS_FILE" node -e "
+      const fs = require('fs');
+      try {
+        const d = JSON.parse(fs.readFileSync(process.env.SETTINGS_PATH, 'utf8'));
+        const w = d.window || {};
+        process.stdout.write([(w.w||1280),(w.h||900),(w.x||0),(w.y||0)].join(' ') + '\n');
+      } catch(e) { process.stdout.write('1280 900 0 0\n'); }
+    "
+  ) || true
+fi
+
+# ── 5. Start server via nodemon (background) ─────────────────────────────────
+"$SCRIPT_DIR/node_modules/.bin/nodemon" \
+  --watch "$SCRIPT_DIR/server.js" \
+  --watch "$SCRIPT_DIR/index.html" \
+  "$SCRIPT_DIR/server.js" &
+NODEMON_PID=$!
+
+# ── 6. Poll until server is accepting connections ────────────────────────────
+echo -n "  Waiting for server"
+until curl -sf "http://localhost:${PORT}/api/home" >/dev/null 2>&1; do
+  echo -n "."
+  sleep 0.2
+done
+echo " ready."
+echo ""
+
+# ── 7. Launch Chrome ─────────────────────────────────────────────────────────
+CHROME_FLAGS="--app=${URL} --new-window --window-size=${WIN_W},${WIN_H} --window-position=${WIN_X},${WIN_Y}"
+if command -v activity-google-chrome &>/dev/null; then
+  activity-google-chrome $CHROME_FLAGS &
+elif command -v google-chrome &>/dev/null; then
+  echo "⚠️  activity-google-chrome not found — falling back to google-chrome"
+  google-chrome $CHROME_FLAGS &
+elif command -v chromium-browser &>/dev/null; then
+  echo "⚠️  activity-google-chrome not found — falling back to chromium-browser"
+  chromium-browser $CHROME_FLAGS &
+else
+  echo "⚠️  No Chrome launcher found. Open ${URL} manually."
+fi
+
+# ── 8. Wait on nodemon (keeps shell occupied; exits when server shuts down) ──
+wait $NODEMON_PID

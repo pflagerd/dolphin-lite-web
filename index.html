@@ -1,0 +1,2423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPCEtLSBTbGVlayBib2R5OiBzbm91dCBsZWZ0LCBhcmNoaW5nIGJhY2ssIHRhaWwgcmlnaHQgLS0+CiAgPHBhdGggZmlsbD0iIzFkOTlmMyIgZD0iCiAgICBNMiAxNwogICAgQzMgMTUgNiAxMiAxMSAxMQogICAgQzE0IDEwIDE3IDEwIDE5IDEwCiAgICBMMjEgNAogICAgTDIzIDEwCiAgICBDMjUgMTAgMjcgMTMgMjggMTUKICAgIEwzMSAxMQogICAgTDI5IDE3CiAgICBMMzEgMjIKICAgIEwyOCAxOAogICAgQzI2IDIxIDIyIDIzIDE3IDIzCiAgICBDMTIgMjMgNyAyMSA0IDE5CiAgICBDMyAxOCAyIDE4IDIgMTdaCiAgIi8+CiAgPCEtLSBQZWN0b3JhbCBmaW4gaGludCAtLT4KICA8cGF0aCBmaWxsPSIjMTA3N2NjIiBkPSJNMTAgMTQgQzExIDE3IDEzIDE5IDExIDIwIEM5IDE5IDggMTcgMTAgMTRaIi8+CiAgPCEtLSBFeWUgLS0+CiAgPGNpcmNsZSBjeD0iOSIgY3k9IjE0IiByPSIxLjUiIGZpbGw9IndoaXRlIi8+CiAgPCEtLSBQdXBpbCAtLT4KICA8Y2lyY2xlIGN4PSI5LjQiIGN5PSIxNCIgcj0iMC43IiBmaWxsPSIjMGE0YTdhIi8+Cjwvc3ZnPgo=">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dolphin</title>
+<style>
+/* ═══════════════════════════════════════════════════════════
+   BREEZE DARK THEME  — KDE color palette
+═══════════════════════════════════════════════════════════ */
+:root {
+  --bg-base:          #1b2224;
+  --bg-panel:         #232629;
+  --bg-toolbar:       #31363b;
+  --bg-hover:         rgba(255,255,255,.06);
+  --bg-selected:      #1d99f3;
+  --bg-selected-dim:  rgba(29,153,243,.25);
+  --bg-input:         #18191a;
+  --bg-dialog:        #2a2e32;
+  --bg-row-alt:       rgba(255,255,255,.02);
+  --text-primary:     #eff0f1;
+  --text-secondary:   #a1acaf;
+  --text-dim:         #7f8c8d;
+  --text-selected:    #ffffff;
+  --border:           #31363b;
+  --border-light:     #3d4347;
+  --accent:           #1d99f3;
+  --accent-hover:     #2baff8;
+  --accent-danger:    #da4453;
+  --accent-warn:      #f67400;
+  --scrollbar-track:  #1e2427;
+  --scrollbar-thumb:  #3d4347;
+  --font-ui:          'Noto Sans', 'DejaVu Sans', 'Segoe UI', 'Liberation Sans', sans-serif;
+  --font-mono:        'Noto Mono', 'DejaVu Sans Mono', 'Consolas', monospace;
+  --radius-sm:        3px;
+  --radius-md:        5px;
+  --transition:       0.12s ease;
+  --sidebar-w:        210px;
+  --toolbar-h:        42px;
+  --status-h:         24px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  overflow: hidden;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Scrollbars ─────────────────────────────────────────── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #4a5057; }
+
+/* ─── App Shell ─────────────────────────────────────────── */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-width: 600px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TOOLBAR
+═══════════════════════════════════════════════════════════ */
+#toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: var(--toolbar-h);
+  min-height: var(--toolbar-h);
+  background: var(--bg-toolbar);
+  border-bottom: 1px solid rgba(0,0,0,.4);
+  padding: 0 6px;
+  flex-shrink: 0;
+}
+
+.toolbar-sep {
+  width: 1px;
+  height: 22px;
+  background: var(--border-light);
+  margin: 0 3px;
+  flex-shrink: 0;
+}
+
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--transition), color var(--transition);
+  padding: 0;
+}
+.btn-icon:hover:not(:disabled) { background: var(--bg-hover); }
+.btn-icon:active:not(:disabled) { background: rgba(255,255,255,.12); }
+.btn-icon:disabled { opacity: 0.35; cursor: default; }
+.btn-icon.active { background: var(--bg-selected-dim); color: var(--accent); }
+.btn-icon svg { display: block; }
+
+/* Location bar */
+#location-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  height: 28px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  cursor: text;
+  overflow: hidden;
+  position: relative;
+}
+#location-wrap:focus-within { border-color: var(--accent); }
+
+#breadcrumb-bar {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 4px;
+  gap: 0;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+}
+#breadcrumb-bar.hidden { display: none; }
+
+.bc-item {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 5px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--text-primary);
+  font-size: 12.5px;
+  flex-shrink: 1;
+  min-width: 0;
+  transition: background var(--transition);
+}
+.bc-item:hover { background: var(--bg-hover); }
+.bc-item:last-child { color: var(--text-primary); font-weight: 500; }
+.bc-sep {
+  color: var(--text-dim);
+  font-size: 11px;
+  flex-shrink: 0;
+  padding: 0 1px;
+}
+
+#path-input {
+  display: none;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 0 8px;
+  outline: none;
+}
+#path-input.visible { display: block; }
+
+/* Search bar (inline below toolbar) */
+#search-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+#search-bar.hidden { display: none; }
+#search-bar label { color: var(--text-secondary); font-size: 12px; }
+#search-input {
+  flex: 1;
+  max-width: 320px;
+  height: 26px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  padding: 0 8px;
+  outline: none;
+  transition: border-color var(--transition);
+}
+#search-input:focus  { border-color: var(--accent); }
+#search-input.invalid { border-color: var(--accent-danger); }
+
+.search-toggle {
+  height: 22px;
+  padding: 0 9px;
+  border: 1px solid var(--border-light);
+  border-radius: 11px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+  flex-shrink: 0;
+}
+.search-toggle:hover  { background: var(--bg-hover); color: var(--text-primary); }
+.search-toggle.active {
+  background: var(--bg-selected-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+#search-close {
+  background: none; border: none; color: var(--text-dim);
+  cursor: pointer; font-size: 16px; padding: 0 4px; line-height: 1;
+}
+#search-close:hover { color: var(--text-primary); }
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN LAYOUT
+═══════════════════════════════════════════════════════════ */
+#main-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ─── Sidebar ─────────────────────────────────────────────── */
+#sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0;
+}
+
+.places-section { margin-bottom: 4px; }
+.places-header {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 10px 14px 4px;
+}
+.places-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px 5px 14px;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background var(--transition);
+  position: relative;
+  color: var(--text-primary);
+  font-size: 12.5px;
+}
+.places-item:hover { background: var(--bg-hover); }
+.places-item.active {
+  background: var(--bg-selected-dim);
+  color: var(--accent);
+}
+.places-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 3px; bottom: 3px;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+}
+.places-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Content ─────────────────────────────────────────────── */
+#content-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+#file-view {
+  flex: 1;
+  overflow: auto;
+  padding: 4px;
+  position: relative;
+  outline: none;
+}
+
+/* ── Icon View ── */
+#file-view.view-icons .file-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 4px;
+  padding: 4px;
+}
+
+.file-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100px;
+  padding: 6px 4px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--transition);
+  position: relative;
+  border: 2px solid transparent;
+}
+.file-item:hover { background: var(--bg-hover); }
+.file-item.selected {
+  background: var(--bg-selected-dim);
+  border-color: rgba(29,153,243,.4);
+}
+.file-item .fi-icon {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.file-item .fi-icon svg { width: 48px; height: 48px; }
+.file-item .fi-name {
+  margin-top: 4px;
+  font-size: 11.5px;
+  text-align: center;
+  word-break: break-all;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.3;
+  max-width: 96px;
+  color: var(--text-primary);
+}
+.file-item.selected .fi-name { color: var(--text-selected); }
+.file-item .fi-symlink {
+  position: absolute;
+  bottom: 28px;
+  right: 28px;
+  width: 14px;
+  height: 14px;
+  background: var(--bg-panel);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Compact View ── */
+#file-view.view-compact .file-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 2px;
+  padding: 4px;
+}
+#file-view.view-compact .file-item {
+  flex-direction: row;
+  width: calc(50% - 2px);
+  padding: 3px 6px;
+  gap: 6px;
+  border-radius: var(--radius-sm);
+}
+#file-view.view-compact .fi-icon { width: 22px; height: 22px; }
+#file-view.view-compact .fi-icon svg { width: 22px; height: 22px; }
+#file-view.view-compact .fi-name {
+  margin-top: 0;
+  text-align: left;
+  -webkit-line-clamp: 1;
+  font-size: 12px;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Detail View ── */
+#file-view.view-details {
+  padding: 0;
+}
+#file-view.view-details .file-grid { width: 100%; }
+
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.detail-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--bg-toolbar);
+}
+.detail-table th {
+  padding: 5px 10px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+.detail-table th:hover { color: var(--text-primary); }
+.detail-table th.sort-asc::after  { content: ' ↑'; font-size: 10px; }
+.detail-table th.sort-desc::after { content: ' ↓'; font-size: 10px; }
+
+/* Column resize handle */
+.detail-table th {
+  position: relative;  /* needed for handle positioning */
+}
+.col-resize-handle {
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+  z-index: 10;
+  user-select: none;
+}
+.col-resize-handle:hover,
+.col-resize-handle.dragging {
+  background: var(--accent);
+  opacity: 0.6;
+}
+body.col-resizing { cursor: col-resize !important; user-select: none !important; }
+body.col-resizing * { cursor: col-resize !important; }
+.detail-table td {
+  padding: 3px 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+  border-bottom: 1px solid rgba(255,255,255,.03);
+}
+.detail-table tbody tr { cursor: pointer; transition: background var(--transition); }
+.detail-table tbody tr:hover { background: var(--bg-hover); }
+.detail-table tbody tr.selected { background: var(--bg-selected-dim); }
+.detail-table tbody tr.selected td { color: var(--text-selected); }
+.dt-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 160px;
+}
+.dt-icon { width: 18px; height: 18px; flex-shrink: 0; }
+.dt-icon svg { width: 18px; height: 18px; }
+.td-name { min-width: 200px; }
+.td-size { color: var(--text-secondary); text-align: right; min-width: 70px; }
+.td-type { color: var(--text-secondary); min-width: 140px; }
+.td-modified { color: var(--text-secondary); min-width: 140px; }
+.td-perms { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); min-width: 70px; }
+
+/* Rename inline */
+.fi-name-input {
+  font-size: 11.5px;
+  font-family: var(--font-ui);
+  text-align: center;
+  background: var(--bg-input);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: 1px 4px;
+  width: 90px;
+  margin-top: 4px;
+  outline: none;
+}
+
+/* Empty state */
+.empty-dir {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 12px;
+  color: var(--text-dim);
+}
+.empty-dir svg { opacity: 0.3; }
+
+/* Loading spinner */
+.loading-wrap {
+  display: flex; align-items: center; justify-content: center; height: 100%;
+  color: var(--text-dim); gap: 10px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 20px; height: 20px;
+  border: 2px solid var(--border-light);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STATUS BAR
+═══════════════════════════════════════════════════════════ */
+#status-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: var(--status-h);
+  min-height: var(--status-h);
+  background: var(--bg-toolbar);
+  border-top: 1px solid rgba(0,0,0,.4);
+  padding: 0 10px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+#status-bar .status-sep { width: 1px; height: 14px; background: var(--border-light); }
+#status-info { flex: 1; }
+#status-path { color: var(--text-dim); font-family: var(--font-mono); font-size: 10.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 300px; }
+#status-zoom { display: flex; align-items: center; gap: 4px; }
+#zoom-range {
+  -webkit-appearance: none;
+  width: 64px; height: 3px;
+  background: var(--border-light);
+  border-radius: 2px; outline: none; cursor: pointer;
+}
+#zoom-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px; height: 12px;
+  background: var(--accent); border-radius: 50%;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CONTEXT MENU
+═══════════════════════════════════════════════════════════ */
+#ctx-menu {
+  position: fixed;
+  z-index: 1000;
+  background: #2d3237;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  min-width: 200px;
+  padding: 4px 0;
+  box-shadow: 0 6px 24px rgba(0,0,0,.55), 0 1px 4px rgba(0,0,0,.3);
+  display: none;
+}
+#ctx-menu.visible { display: block; }
+
+.ctx-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px 6px 10px;
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--text-primary);
+  transition: background var(--transition);
+  white-space: nowrap;
+}
+.ctx-item:hover { background: var(--bg-selected); color: #fff; }
+.ctx-item.danger:hover { background: var(--accent-danger); }
+.ctx-item .ctx-icon { width: 18px; text-align: center; opacity: 0.8; font-size: 14px; }
+.ctx-sep { height: 1px; background: var(--border-light); margin: 3px 0; }
+.ctx-item.disabled { opacity: 0.4; pointer-events: none; }
+
+/* ═══════════════════════════════════════════════════════════
+   DIALOGS
+═══════════════════════════════════════════════════════════ */
+#dialog-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.6);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+#dialog-overlay.visible { display: flex; }
+
+.dialog {
+  background: var(--bg-dialog);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  min-width: 360px;
+  max-width: 520px;
+  box-shadow: 0 16px 48px rgba(0,0,0,.7);
+  overflow: hidden;
+}
+.dialog-title {
+  font-size: 14px; font-weight: 600;
+  padding: 14px 18px 0;
+  color: var(--text-primary);
+  display: flex; align-items: center; gap: 8px;
+}
+.dialog-body { padding: 12px 18px; color: var(--text-secondary); font-size: 12.5px; line-height: 1.5; }
+.dialog-input {
+  width: 100%;
+  height: 30px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  padding: 0 10px;
+  margin-top: 8px;
+  outline: none;
+}
+.dialog-input:focus { border-color: var(--accent); }
+.dialog-footer {
+  display: flex; justify-content: flex-end; gap: 8px;
+  padding: 10px 18px 14px;
+}
+.btn {
+  height: 30px; padding: 0 16px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: var(--bg-toolbar);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+}
+.btn:hover { background: var(--bg-hover); border-color: #4a5057; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.btn.danger { background: var(--accent-danger); border-color: var(--accent-danger); color: #fff; }
+.btn.danger:hover { background: #e0555f; }
+
+/* Properties dialog */
+.prop-row {
+  display: flex;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  font-size: 12px;
+}
+.prop-label { width: 110px; color: var(--text-dim); flex-shrink: 0; }
+.prop-value { color: var(--text-primary); word-break: break-all; font-family: var(--font-mono); font-size: 11.5px; }
+
+/* Tooltip — managed by JS, see initTooltip() */
+#tooltip {
+  position: fixed;
+  z-index: 9999;
+  background: #0d1011;
+  color: var(--text-primary);
+  font-size: 11.5px;
+  line-height: 1.5;
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid var(--border-light);
+  white-space: pre;
+  pointer-events: none;
+  box-shadow: 0 4px 14px rgba(0,0,0,.55);
+  text-align: center;
+  display: none;
+  max-width: 280px;
+}
+
+/* Drag selection box */
+#sel-box {
+  position: fixed;
+  border: 1px solid var(--accent);
+  background: rgba(29,153,243,.12);
+  pointer-events: none;
+  z-index: 50;
+  display: none;
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     APP SHELL
+══════════════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- TOOLBAR -->
+  <div id="toolbar">
+    <button class="btn-icon" id="btn-back"    data-tip="Go back&#10;Alt + ←"    disabled>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button class="btn-icon" id="btn-forward" data-tip="Go forward&#10;Alt + →"  disabled>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button class="btn-icon" id="btn-up"      data-tip="Go up one level&#10;Alt + ↑  or  Backspace">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 12V4M4 7l4-4 4 4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button class="btn-icon" id="btn-refresh" data-tip="Refresh directory listing&#10;F5">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M13 8A5 5 0 1 1 9.5 3.3M13 3v4h-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <div class="toolbar-sep"></div>
+
+    <!-- Location bar -->
+    <div id="location-wrap">
+      <div id="breadcrumb-bar"></div>
+      <input id="path-input" type="text" spellcheck="false" autocomplete="off">
+    </div>
+
+    <div class="toolbar-sep"></div>
+
+    <button class="btn-icon" id="btn-search" data-tip="Search files in current folder&#10;Ctrl + F">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <circle cx="6.5" cy="6.5" r="4"/>
+        <path d="M9.5 9.5L13 13"/>
+      </svg>
+    </button>
+
+    <div class="toolbar-sep"></div>
+
+    <!-- View mode buttons -->
+    <button class="btn-icon active" id="btn-view-icons"   data-tip="Icon view&#10;Large icons in a grid&#10;Ctrl + 1">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <rect x="1"  y="1"  width="6" height="6" rx="1"/>
+        <rect x="9"  y="1"  width="6" height="6" rx="1"/>
+        <rect x="1"  y="9"  width="6" height="6" rx="1"/>
+        <rect x="9"  y="9"  width="6" height="6" rx="1"/>
+      </svg>
+    </button>
+    <button class="btn-icon" id="btn-view-compact" data-tip="Compact view&#10;Small icons, two columns&#10;Ctrl + 2">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <rect x="1" y="1"  width="6" height="3" rx="1"/>
+        <rect x="9" y="1"  width="6" height="3" rx="1"/>
+        <rect x="1" y="6"  width="6" height="3" rx="1"/>
+        <rect x="9" y="6"  width="6" height="3" rx="1"/>
+        <rect x="1" y="11" width="6" height="3" rx="1"/>
+        <rect x="9" y="11" width="6" height="3" rx="1"/>
+      </svg>
+    </button>
+    <button class="btn-icon" id="btn-view-details" data-tip="Details view&#10;List with name, size, type &amp; date&#10;Ctrl + 3">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <rect x="1" y="2" width="14" height="2" rx="1"/>
+        <rect x="1" y="6" width="14" height="2" rx="1"/>
+        <rect x="1" y="10" width="14" height="2" rx="1"/>
+        <rect x="1" y="14" width="14" height="1" rx=".5"/>
+      </svg>
+    </button>
+
+    <div class="toolbar-sep"></div>
+
+    <button class="btn-icon" id="btn-hidden" data-tip="Show / hide dotfiles&#10;(files whose names start with .)&#10;Ctrl + H">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+        <ellipse cx="8" cy="8" rx="6" ry="4"/>
+        <circle cx="8" cy="8" r="2" fill="currentColor" stroke="none"/>
+      </svg>
+    </button>
+    <button class="btn-icon" id="btn-newfolder" data-tip="Create a new folder here&#10;Ctrl + Shift + N">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M1 4a1 1 0 011-1h4l1.5 2H14a1 1 0 011 1v7a1 1 0 01-1 1H2a1 1 0 01-1-1V4z" fill="#f0ba32" stroke="#c9991e" stroke-width=".8"/>
+        <path d="M8 7v4M6 9h4" stroke="#c9991e" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- SEARCH BAR -->
+  <div id="search-bar" class="hidden">
+    <span data-tip="Search files in the current folder&#10;Shell wildcards supported by default:&#10;  *      any sequence of characters&#10;  ?      any single character&#10;  [abc]  any character in the set&#10;  [!abc] any character NOT in the set&#10;Plain text searches as a substring&#10;Ctrl + F  to open · Esc to close" style="display:flex;align-items:center;gap:5px;cursor:default">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#a1acaf" stroke-width="1.8" stroke-linecap="round">
+        <circle cx="6.5" cy="6.5" r="4"/><path d="M9.5 9.5L13 13"/>
+      </svg>
+      <label>Search:</label>
+    </span>
+    <input id="search-input" type="text" placeholder="Type to search… (* ? wildcards supported)" autocomplete="off" spellcheck="false">
+    <button class="search-toggle" id="btn-search-regex" data-tip="Full regex mode&#10;Off (default): shell wildcards * ? [abc] [!abc]&#10;On: full JavaScript regular expression syntax&#10;e.g.  \.(jpg|png|gif)$  to find image files">.*</button>
+    <button class="search-toggle" id="btn-search-case"  data-tip="Case-sensitive matching&#10;Off (default): foo matches Foo, FOO, foo&#10;On: exact case required">Aa</button>
+    <button class="search-toggle active" id="btn-search-hidden" data-tip="Include dotfiles in results&#10;On (default): hidden files (e.g. .bashrc) are shown&#10;Off: files whose names start with . are suppressed">.·</button>
+    <button id="search-close" data-tip="Close search&#10;Esc">×</button>
+  </div>
+
+  <!-- MAIN LAYOUT -->
+  <div id="main-layout">
+
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+      <div id="places-list"></div>
+    </div>
+
+    <!-- CONTENT -->
+    <div id="content-wrap">
+      <div id="file-view" class="view-icons" tabindex="0">
+        <div class="loading-wrap"><div class="spinner"></div> Loading…</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- STATUS BAR -->
+  <div id="status-bar">
+    <span id="status-info">Ready</span>
+    <div class="status-sep"></div>
+    <span id="status-path"></span>
+    <div style="flex:1"></div>
+    <div id="status-zoom" title="Icon zoom">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="opacity:.5">
+        <circle cx="6.5" cy="6.5" r="4"/><path d="M9.5 9.5L13 13"/>
+      </svg>
+      <input id="zoom-range" type="range" min="0.6" max="1.8" step="0.1" value="1">
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<!-- CONTEXT MENU -->
+<div id="ctx-menu"></div>
+
+<!-- DIALOG OVERLAY -->
+<div id="dialog-overlay">
+  <div class="dialog" id="dialog-box"></div>
+</div>
+
+<!-- DRAG SELECTION BOX -->
+<div id="sel-box"></div>
+
+<!-- TOOLTIP -->
+<div id="tooltip"></div>
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════════
+const S = {
+  path:        '',
+  startDir:    '',
+  history:     [],
+  histIdx:     -1,
+  view:        'icons',
+  showHidden:  false,
+  sort:        { by: 'name', dir: 'asc' },
+  selected:    new Set(),
+  clipboard:   null,   // { paths:[], mode:'copy'|'cut' }
+  entries:     [],
+  places:      [],
+  searchMode:  false,
+  editingPath: false,
+  zoom:        1,
+  renaming:    null,   // path being renamed
+  columnWidths: {},    // { name: px, size: px, … }
+};
+
+// ══════════════════════════════════════════════════════════════
+//  DOM refs
+// ══════════════════════════════════════════════════════════════
+const $  = id => document.getElementById(id);
+const $$ = (sel, root = document) => root.querySelectorAll(sel);
+
+const btnBack     = $('btn-back');
+const btnForward  = $('btn-forward');
+const btnUp       = $('btn-up');
+const btnRefresh  = $('btn-refresh');
+const btnSearch   = $('btn-search');
+const btnHidden   = $('btn-hidden');
+const btnNewfolder= $('btn-newfolder');
+const btnViewIco  = $('btn-view-icons');
+const btnViewComp = $('btn-view-compact');
+const btnViewDet  = $('btn-view-details');
+const bcBar       = $('breadcrumb-bar');
+const pathInput   = $('path-input');
+const locWrap     = $('location-wrap');
+const searchBar   = $('search-bar');
+const searchInput = $('search-input');
+const searchClose = $('search-close');
+const sidebar     = $('sidebar');
+const placesList  = $('places-list');
+const fileView    = $('file-view');
+const statusInfo  = $('status-info');
+const statusPath  = $('status-path');
+const ctxMenu     = $('ctx-menu');
+const dlgOverlay  = $('dialog-overlay');
+const dlgBox      = $('dialog-box');
+const zoomRange   = $('zoom-range');
+const selBox      = $('sel-box');
+
+// ══════════════════════════════════════════════════════════════
+//  API
+// ══════════════════════════════════════════════════════════════
+async function apiFetch(url, opts = {}) {
+  try {
+    const r = await fetch(url, opts);
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || r.statusText);
+    return d;
+  } catch (e) {
+    showErr(e.message);
+    throw e;
+  }
+}
+const apiLs     = (p, sh, s, sd) => apiFetch(`/api/ls?path=${enc(p)}&showHidden=${sh}&sort=${s}&dir=${sd}`);
+const apiHome   = ()              => apiFetch('/api/home');
+const apiPlaces = ()              => apiFetch('/api/places');
+const apiStat   = (p)             => apiFetch(`/api/stat?path=${enc(p)}`);
+const apiMkdir  = (p)             => apiFetch('/api/mkdir',  {method:'POST', headers:jh, body:JSON.stringify({path:p})});
+const apiRename = (o, n)          => apiFetch('/api/rename', {method:'POST', headers:jh, body:JSON.stringify({oldPath:o,newPath:n})});
+const apiDelete = (ps)            => apiFetch('/api/delete', {method:'POST', headers:jh, body:JSON.stringify({paths:ps})});
+const apiCopy   = (s, d)          => apiFetch('/api/copy',   {method:'POST', headers:jh, body:JSON.stringify({src:s,dest:d})});
+const apiSearch = (p, q, regex, cs, sh) => apiFetch(`/api/search?path=${enc(p)}&query=${enc(q)}&regex=${regex}&caseSensitive=${cs}&showHidden=${sh}`);
+const apiSettingsGet  = (p)        => apiFetch(`/api/settings?path=${enc(p)}`);
+const apiSettingsPost = (p, s)     => apiFetch('/api/settings', {method:'POST', headers:jh, body:JSON.stringify({path:p, settings:s})});
+const enc = encodeURIComponent;
+const jh  = {'Content-Type':'application/json'};
+
+// ══════════════════════════════════════════════════════════════
+//  FILE ICONS  (SVG templates)
+// ══════════════════════════════════════════════════════════════
+function folderSVG(color='#f0ba32', darkColor='#e8a800') {
+  return `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="fg${color.slice(1)}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="${color}"/>
+        <stop offset="1" stop-color="${darkColor}"/>
+      </linearGradient>
+    </defs>
+    <path d="M4 14a3 3 0 013-3h9l3 4h22a3 3 0 013 3v18a3 3 0 01-3 3H7a3 3 0 01-3-3V14z" fill="url(#fg${color.slice(1)})"/>
+    <path d="M4 20h40v12a3 3 0 01-3 3H7a3 3 0 01-3-3V20z" fill="${darkColor}" opacity="0.18"/>
+    <path d="M4 20h40" stroke="${darkColor}" stroke-width="1" opacity="0.35"/>
+  </svg>`;
+}
+
+function fileSVG(accent='#7f8c8d', ext='') {
+  return `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 6h20l8 8v30a2 2 0 01-2 2H10a2 2 0 01-2-2V8a2 2 0 012-2z" fill="#3d4347"/>
+    <path d="M30 6l8 8h-6a2 2 0 01-2-2V6z" fill="#525a62"/>
+    <rect x="8" y="10" width="32" height="6" rx="0" fill="${accent}" opacity="0.82"/>
+    ${ext ? `<text x="24" y="33" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="9" font-weight="700" fill="${accent}" opacity="0.95">${ext.toUpperCase()}</text>` : ''}
+  </svg>`;
+}
+
+function getIcon(entry, size=48) {
+  if (entry.isDir) return folderSVG();
+  const m = entry.mimeType || '';
+  const ext = (entry.name.split('.').pop() || '').toLowerCase();
+
+  if (m.startsWith('image/'))      return fileSVG('#27ae60', ext);
+  if (m.startsWith('video/'))      return fileSVG('#2980b9', ext);
+  if (m.startsWith('audio/'))      return fileSVG('#e67e22', ext);
+  if (m === 'application/pdf')     return fileSVG('#c0392b', 'pdf');
+  if (m.includes('zip') || m.includes('tar') || m.includes('gzip') ||
+      m.includes('bzip') || m.includes('xz')  || m.includes('7z') ||
+      m.includes('rar')  || m.includes('zstd') || m.includes('deb') || m.includes('rpm'))
+                                   return fileSVG('#795548', ext);
+  if (m.includes('javascript') || m.includes('typescript') || m.includes('python') ||
+      m.includes('ruby') || m.includes('php') || m.includes('csrc') || m.includes('c++') ||
+      m.includes('java') || m.includes('go')  || m.includes('rust') || m.includes('dart') ||
+      m.includes('swift')|| m.includes('kotlin')|| m.includes('haskell') || m.includes('ocaml') ||
+      m === 'application/json' || m === 'text/yaml' || m === 'application/xml' ||
+      m.includes('sh') || m.includes('powershell') || m.includes('lua'))
+                                   return fileSVG('#16a085', ext);
+  if (m.includes('html') || m.includes('css')) return fileSVG('#8e44ad', ext);
+  if (m.includes('word') || m.includes('odt')) return fileSVG('#2e86c1', 'doc');
+  if (m.includes('excel')|| m.includes('spreadsheet') || m.includes('ods')) return fileSVG('#1e8449', 'xls');
+  if (m.includes('powerpoint') || m.includes('presentation')) return fileSVG('#af601a', 'ppt');
+  if (m.includes('sqlite') || m.includes('sql')) return fileSVG('#8e44ad', ext);
+  if (m.includes('font'))          return fileSVG('#c0392b', ext);
+  if (m.includes('executable') || m.includes('sharedlib') || m.includes('msdownload') ||
+      m.includes('x-sh') || m.includes('x-executable'))
+                                   return fileSVG('#546e7a', ext);
+  if (m.startsWith('text/'))       return fileSVG('#7f8c8d', ext);
+  return fileSVG('#546e7a', ext);
+}
+
+function getIconSmall(entry) {
+  return getIcon(entry, 18);
+}
+
+// Place icons
+function placeIconSVG(icon) {
+  const icons = {
+    home: `<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" fill="#1d99f3" stroke="#1583d4" stroke-width=".8"/>
+      <rect x="7.5" y="11" width="5" height="7" rx=".5" fill="white" opacity=".6"/>
+    </svg>`,
+    desktop: `<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="3" width="16" height="11" rx="1.5" fill="#546e7a" stroke="#455a64" stroke-width=".8"/>
+      <rect x="6" y="16" width="8" height="2" rx="1" fill="#546e7a"/>
+      <rect x="3" y="4" width="14" height="9" rx=".5" fill="#1d99f3" opacity=".7"/>
+    </svg>`,
+    documents: `<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 3h9l4 4v11a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1z" fill="#2e86c1" stroke="#1a6a9e" stroke-width=".8"/>
+      <path d="M13 3l4 4h-3a1 1 0 01-1-1V3z" fill="#5dade2"/>
+      <path d="M6 9h8M6 12h6" stroke="white" stroke-width="1.2" stroke-linecap="round" opacity=".7"/>
+    </svg>`,
+    downloads: `<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 14a1 1 0 000 2h12a1 1 0 000-2H4z" fill="#27ae60"/>
+      <path d="M10 3v8M7 8l3 3 3-3" stroke="#1d99f3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`,
+    audio: `<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="10" cy="10" r="8" fill="#e67e22" opacity=".85"/>
+      <circle cx="10" cy="10" r="3" fill="#fff" opacity=".6"/>
+      <path d="M8 7v6l5-3-5-3z" fill="white"/>
+    </svg>`,
+    images: `<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="4" width="16" height="12" rx="1.5" fill="#27ae60" stroke="#1e8449" stroke-width=".8"/>
+      <circle cx="7" cy="8" r="1.5" fill="white" opacity=".8"/>
+      <path d="M2 14l4-4 3 3 3-4 6 5" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity=".8"/>
+    </svg>`,
+    video: `<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="4" width="12" height="12" rx="1.5" fill="#2980b9" stroke="#1a6a9e" stroke-width=".8"/>
+      <path d="M14 8l4-2v8l-4-2V8z" fill="#2980b9" stroke="#1a6a9e" stroke-width=".8"/>
+      <path d="M7 8v4l4-2-4-2z" fill="white" opacity=".8"/>
+    </svg>`,
+    trash: `<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M7 3h6M5 5h10l-1 12H6L5 5z" stroke="#da4453" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M8 8v6M12 8v6" stroke="#da4453" stroke-width="1.2" stroke-linecap="round" opacity=".7"/>
+    </svg>`,
+    root: `<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="3" width="16" height="14" rx="2" fill="#546e7a" stroke="#455a64" stroke-width=".8"/>
+      <path d="M6 8h2v6H6M8 11h3M11 8v6" stroke="white" stroke-width="1.2" stroke-linecap="round" opacity=".8"/>
+    </svg>`,
+    drive: `<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="5" width="14" height="10" rx="2" fill="#8e44ad" stroke="#6c3483" stroke-width=".8"/>
+      <circle cx="15" cy="14" r="1.2" fill="#d7bde2"/>
+      <rect x="5" y="8" width="6" height="1.5" rx=".75" fill="white" opacity=".5"/>
+    </svg>`,
+    folder: `<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2 7a1 1 0 011-1h4l1.5 2H17a1 1 0 011 1v7a1 1 0 01-1 1H3a1 1 0 01-1-1V7z" fill="#f0ba32" stroke="#c9991e" stroke-width=".7"/>
+    </svg>`,
+  };
+  return icons[icon] || icons.folder;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SETTINGS  — per-directory save/restore + window geometry
+// ══════════════════════════════════════════════════════════════
+
+// ── Dynamic column width calculation via Canvas measureText ────
+let _colWidthCache = null;
+
+function computeColWidths() {
+  if (!_colWidthCache) {
+    const canvas = document.createElement('canvas');
+    const ctx    = canvas.getContext('2d');
+    const STACK  = "'Noto Sans','DejaVu Sans','Segoe UI','Liberation Sans',sans-serif";
+    const CELL   = `12.5px ${STACK}`;
+    const HEADER = `600 12.5px ${STACK}`;
+    const PAD    = 26;
+
+    function px(text, font) {
+      ctx.font = font;
+      return Math.ceil(ctx.measureText(text).width) + PAD;
+    }
+
+    const d = new Date(2026, 8, 30, 12, 34);
+    const worstDate =
+      d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+      + ' '
+      + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
+    _colWidthCache = {
+      size:     Math.max(px('Size',        HEADER), px('1023.9 MiB',      CELL)),
+      type:     Math.max(px('Type',        HEADER), px('JavaScript File',  CELL)) + 6,
+      modified: Math.max(px('Modified',    HEADER), px(worstDate,          CELL)),
+      mode:     Math.max(px('Permissions', HEADER), px('0755',             CELL)),
+    };
+  }
+
+  const { size, type, modified, mode } = _colWidthCache;
+  return _colWidthCache;
+}
+
+// ── Window geometry (saved in startDir's .dolphin-lite-web.json) ──────────────────
+function saveWindowGeometry() {
+  if (!S.startDir) return;
+  apiSettingsPost(S.startDir, {
+    window: {
+      w: window.outerWidth,
+      h: window.outerHeight,
+      x: window.screenX,
+      y: window.screenY,
+    }
+  }).catch(() => {});
+}
+
+function restoreWindowGeometry(settings) {
+  if (!settings || !settings.window) return;
+  const { w, h, x, y } = settings.window;
+  try { window.resizeTo(w, h); } catch {}
+  try { window.moveTo(x, y);   } catch {}
+}
+
+let _geoTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(_geoTimer);
+  _geoTimer = setTimeout(saveWindowGeometry, 600);
+});
+window.addEventListener('move', () => {
+  clearTimeout(_geoTimer);
+  _geoTimer = setTimeout(saveWindowGeometry, 600);
+});
+
+// ── Directory change watcher (SSE) ────────────────────────────
+let _watchSource      = null;
+let _watchRefreshTimer = null;
+
+function watchDir(p) {
+  // Close previous watcher
+  if (_watchSource) { _watchSource.close(); _watchSource = null; }
+  clearTimeout(_watchRefreshTimer);
+
+  const src = new EventSource(`/api/watch?path=${enc(p)}`);
+  _watchSource = src;
+
+  src.onmessage = (e) => {
+    try {
+      const { error } = JSON.parse(e.data);
+      if (error) return;
+    } catch { return; }
+
+    // Debounce: many operations fire multiple events; wait for them to settle
+    clearTimeout(_watchRefreshTimer);
+    _watchRefreshTimer = setTimeout(() => {
+      if (S.path === p && !S.searchMode) refresh();
+    }, 350);
+  };
+
+  // SSE errors are normal on navigation — the close in navigate() handles cleanup
+  src.onerror = () => {};
+}
+
+// ── Per-directory settings ─────────────────────────────────────
+let _saveTimer = null;
+
+function saveDirSettings() {
+  const p = S.path;                                   // capture NOW, not after debounce
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(() => _writeDirSettings(p), 500);
+}
+
+function flushDirSettings(p) {
+  // Cancel any pending debounced save and write immediately for the given path
+  clearTimeout(_saveTimer);
+  _saveTimer = null;
+  _writeDirSettings(p);
+}
+
+function _writeDirSettings(p) {
+  if (!p) return;
+  apiSettingsPost(p, {
+    view:         S.view,
+    sort:         S.sort,
+    showHidden:   S.showHidden,
+    zoom:         S.zoom,
+    columnWidths: S.columnWidths,
+  }).catch(e => showErr(`Settings save failed: ${e.message}`));
+}
+
+async function loadDirSettings(p) {
+  try {
+    const { settings, exists } = await apiSettingsGet(p);
+    if (!exists || !settings) {
+      // First visit — default to details view, sorted by name ascending
+      S.view         = 'details';
+      S.sort         = { by: 'name', dir: 'asc' };
+      S.showHidden   = false;
+      S.zoom         = 1;
+      S.columnWidths = {};
+    } else {
+      if (settings.view)              S.view         = settings.view;
+      if (settings.sort)              S.sort         = settings.sort;
+      if (settings.showHidden != null) S.showHidden  = settings.showHidden;
+      if (settings.zoom)              S.zoom         = settings.zoom;
+      S.columnWidths = settings.columnWidths || {};
+    }
+  } catch {
+    S.view = 'details';
+    S.sort = { by: 'name', dir: 'asc' };
+  }
+  // Sync UI controls to restored state
+  fileView.className = `view-${S.view}`;
+  updateViewButtons();
+  btnHidden.classList.toggle('active', S.showHidden);
+  zoomRange.value = S.zoom;
+}
+
+// ── Sync toolbar view buttons ──────────────────────────────────
+function updateViewButtons() {
+  btnViewIco.classList.toggle('active',  S.view === 'icons');
+  btnViewComp.classList.toggle('active', S.view === 'compact');
+  btnViewDet.classList.toggle('active',  S.view === 'details');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PATH UTILITIES
+// ══════════════════════════════════════════════════════════════
+function truncateMid(str, max = 60) {
+  if (!str || str.length <= max) return str;
+  const keep = Math.floor((max - 1) / 2);
+  return str.slice(0, keep) + '…' + str.slice(-keep);
+}
+
+function updateTitle(p) {
+  document.title = `dolphin-lite-web (${truncateMid(p, 80)})`;
+  statusPath.textContent = truncateMid(p, 72);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════════════════════
+async function navigate(p, pushHistory = true) {
+  hideCtx();
+  if (S.renaming) cancelRename();
+
+  // Flush any unsaved settings for the directory we're leaving
+  if (S.path) flushDirSettings(S.path);
+
+  if (pushHistory) {
+    S.history = S.history.slice(0, S.histIdx + 1);
+    S.history.push(p);
+    S.histIdx = S.history.length - 1;
+  }
+
+  S.path = p;
+  S.selected.clear();
+  updateTitle(p);
+
+  updateNavButtons();
+  updateBreadcrumb(p);
+  exitSearchMode();
+
+  // Show loading immediately — no flash of old or empty content
+  fileView.innerHTML = '<div class="loading-wrap"><div class="spinner"></div> Loading…</div>';
+
+  // Load settings first (determines sort/hidden used for the ls call)
+  await loadDirSettings(p);
+
+  // Fetch directory contents with the now-correct settings, then render once
+  try {
+    const data = await apiLs(p, S.showHidden, S.sort.by, S.sort.dir);
+    S.entries = data.entries;
+    renderFiles(data);
+  } catch (e) {
+    fileView.innerHTML = `<div class="empty-dir">
+      <svg width="64" height="64" viewBox="0 0 48 48" fill="none" stroke="#546e7a" stroke-width="2">
+        <circle cx="24" cy="24" r="20"/><path d="M24 14v10M24 32v2"/>
+      </svg>
+      <div>${e.message}</div>
+    </div>`;
+  }
+
+  updateStatus();
+  updateActiveSidebarItem(p);
+
+  // Persist settings for this directory (creates the file on first visit)
+  saveDirSettings();
+
+  // Watch for filesystem changes in this directory
+  watchDir(p);
+}
+
+async function loadDir(p) {
+  fileView.innerHTML = '<div class="loading-wrap"><div class="spinner"></div> Loading…</div>';
+  try {
+    const data = await apiLs(p, S.showHidden, S.sort.by, S.sort.dir);
+    S.entries = data.entries;
+    renderFiles(data);
+    updateStatus();
+  } catch (e) {
+    fileView.innerHTML = `<div class="empty-dir">
+      <svg width="64" height="64" viewBox="0 0 48 48" fill="none" stroke="#546e7a" stroke-width="2">
+        <circle cx="24" cy="24" r="20"/><path d="M24 14v10M24 32v2"/>
+      </svg>
+      <div>${e.message}</div>
+    </div>`;
+  }
+}
+
+function goBack() {
+  if (S.histIdx <= 0) return;
+  S.histIdx--;
+  navigate(S.history[S.histIdx], false);
+}
+function goForward() {
+  if (S.histIdx >= S.history.length - 1) return;
+  S.histIdx++;
+  navigate(S.history[S.histIdx], false);
+}
+function goUp() {
+  const parts = S.path.replace(/\/+$/, '').split('/');
+  if (parts.length <= 1) return;
+  parts.pop();
+  navigate(parts.join('/') || '/');
+}
+async function refresh() {
+  if (S.searchMode && searchInput.value.trim()) {
+    await execSearch();
+    return;
+  }
+  const scrollTop = fileView.scrollTop;
+  await loadDir(S.path);
+  fileView.scrollTop = scrollTop;
+}
+
+function updateNavButtons() {
+  btnBack.disabled    = S.histIdx <= 0;
+  btnForward.disabled = S.histIdx >= S.history.length - 1;
+  btnUp.disabled      = S.path === '/';
+}
+
+// ══════════════════════════════════════════════════════════════
+//  BREADCRUMB
+// ══════════════════════════════════════════════════════════════
+function updateBreadcrumb(p) {
+  bcBar.innerHTML = '';
+  if (S.editingPath) return;
+  pathInput.classList.remove('visible');
+  bcBar.classList.remove('hidden');
+
+  const parts = p === '/' ? [''] : p.split('/');
+  const paths  = [];
+  let acc = '';
+  for (const seg of parts) {
+    acc = seg === '' ? '/' : acc === '/' ? `/${seg}` : `${acc}/${seg}`;
+    paths.push({ label: seg === '' ? '/' : seg, path: acc });
+  }
+
+  paths.forEach((item, i) => {
+    const el = document.createElement('span');
+    el.className = 'bc-item';
+    el.textContent = item.label;
+    el.addEventListener('click', e => { e.stopPropagation(); navigate(item.path); });
+    bcBar.appendChild(el);
+    if (i < paths.length - 1) {
+      const sep = document.createElement('span');
+      sep.className = 'bc-sep';
+      sep.textContent = '›';
+      bcBar.appendChild(sep);
+    }
+  });
+}
+
+function enterPathEdit() {
+  S.editingPath = true;
+  bcBar.classList.add('hidden');
+  pathInput.classList.add('visible');
+  pathInput.value = S.path;
+  pathInput.focus();
+  pathInput.select();
+}
+function exitPathEdit() {
+  S.editingPath = false;
+  pathInput.classList.remove('visible');
+  updateBreadcrumb(S.path);
+}
+
+locWrap.addEventListener('click', e => {
+  if (e.target === locWrap || e.target === bcBar) enterPathEdit();
+});
+pathInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { const v = pathInput.value.trim(); exitPathEdit(); if (v) navigate(v); }
+  if (e.key === 'Escape') exitPathEdit();
+});
+pathInput.addEventListener('blur', exitPathEdit);
+
+// ══════════════════════════════════════════════════════════════
+//  PLACES SIDEBAR
+// ══════════════════════════════════════════════════════════════
+async function loadPlaces() {
+  const data = await apiPlaces();
+  S.places = data.places;
+  renderPlaces();
+}
+
+function renderPlaces() {
+  placesList.innerHTML = '';
+  let section = null;
+
+  S.places.forEach(p => {
+    if (p.type === 'header') {
+      section = document.createElement('div');
+      section.className = 'places-section';
+      const hdr = document.createElement('div');
+      hdr.className = 'places-header';
+      hdr.textContent = p.label;
+      section.appendChild(hdr);
+      placesList.appendChild(section);
+      return;
+    }
+    if (!section) { section = document.createElement('div'); section.className = 'places-section'; placesList.appendChild(section); }
+    const el = document.createElement('div');
+    el.className = 'places-item';
+    el.dataset.path = p.path;
+    el.innerHTML = `<div class="places-icon">${placeIconSVG(p.icon)}</div><span>${p.name}</span>`;
+    el.addEventListener('click', () => navigate(p.path));
+    section.appendChild(el);
+  });
+}
+
+function updateActiveSidebarItem(p) {
+  $$('.places-item', placesList).forEach(el => {
+    el.classList.toggle('active', el.dataset.path === p);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  FILE RENDERING
+// ══════════════════════════════════════════════════════════════
+function renderFiles(data) {
+  const entries = data.entries || data.results || [];
+  fileView.innerHTML = '';
+
+  if (!entries.length) {
+    fileView.innerHTML = `<div class="empty-dir">
+      <svg width="64" height="64" viewBox="0 0 48 48" fill="none">
+        ${folderSVG('#3d4347', '#31363b')}
+      </svg>
+      <div style="color:var(--text-dim)">This folder is empty</div>
+    </div>`;
+    return;
+  }
+
+  if (S.view === 'details') {
+    renderDetailsView(entries);
+  } else {
+    renderGridView(entries);
+  }
+
+  updateStatus();
+}
+
+function renderGridView(entries) {
+  const grid = document.createElement('div');
+  grid.className = 'file-grid';
+  const scale = S.zoom;
+
+  entries.forEach(entry => {
+    const el = document.createElement('div');
+    el.className = 'file-item';
+    el.dataset.path = entry.path;
+    el.dataset.isdir = entry.isDir ? '1' : '0';
+    el.style.width = Math.round(100 * scale) + 'px';
+
+    const iconDiv = document.createElement('div');
+    iconDiv.className = 'fi-icon';
+    iconDiv.style.width  = Math.round(48 * scale) + 'px';
+    iconDiv.style.height = Math.round(48 * scale) + 'px';
+    iconDiv.innerHTML = getIcon(entry);
+    iconDiv.querySelector('svg').style.width  = Math.round(48 * scale) + 'px';
+    iconDiv.querySelector('svg').style.height = Math.round(48 * scale) + 'px';
+
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'fi-name';
+    nameDiv.textContent = entry.name;
+    nameDiv.style.fontSize = Math.round(11.5 * Math.min(scale, 1.2)) + 'px';
+
+    if (entry.isSymlink) {
+      const badge = document.createElement('div');
+      badge.className = 'fi-symlink';
+      badge.innerHTML = `<svg width="10" height="10" viewBox="0 0 10 10" fill="#a1acaf"><path d="M1 9L9 1M6 1h3v3" stroke="#a1acaf" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>`;
+      el.appendChild(badge);
+    }
+
+    el.appendChild(iconDiv);
+    el.appendChild(nameDiv);
+
+    if (S.selected.has(entry.path)) el.classList.add('selected');
+
+    el.addEventListener('click',      e => selectItem(entry.path, e));
+    el.addEventListener('dblclick',   () => openEntry(entry));
+    el.addEventListener('contextmenu',e => { e.preventDefault(); if (!S.selected.has(entry.path)) selectItem(entry.path, new MouseEvent('click')); showCtxMenu(e, entry); });
+
+    grid.appendChild(el);
+  });
+
+  fileView.appendChild(grid);
+}
+
+function renderDetailsView(entries) {
+  const wrap = document.createElement('div');
+  wrap.className = 'file-grid';
+
+  const tbl = document.createElement('table');
+  tbl.className = 'detail-table';
+  tbl.style.tableLayout = 'fixed';
+
+  const dyn  = computeColWidths();
+  const cols = [
+    { key: 'name',     label: 'Name',        minW: 120                              },  // no defPx → fills remaining space
+    { key: 'size',     label: 'Size',        minW: dyn.size,     defPx: dyn.size     },
+    { key: 'type',     label: 'Type',        minW: dyn.type,     defPx: dyn.type     },
+    { key: 'modified', label: 'Modified',    minW: dyn.modified, defPx: dyn.modified },
+    { key: 'mode',     label: 'Permissions', minW: dyn.mode,     defPx: dyn.mode     },
+  ];
+
+  function logColWidths() {
+    const parts = cols.map(c => `${c.key}:${thRefs[c.key].offsetWidth}px`);
+    console.log('🐬 Column widths — ' + parts.join('  '));
+  }
+  // table-layout:fixed reads th widths from the first row, making
+  // th the single source of truth (no colgroup needed).
+  const thRefs = {};
+
+  // ── thead ───────────────────────────────────────────────────
+  const thead = document.createElement('thead');
+  const hr    = document.createElement('tr');
+
+  cols.forEach(c => {
+    const th = document.createElement('th');
+    th.dataset.sort = c.key;
+
+    // Width: saved px, explicit px default, or nothing (Name gets remaining space)
+    const savedW = S.columnWidths[c.key];
+    const initW  = savedW || c.defPx;
+    if (initW) th.style.width = initW + 'px';
+    thRefs[c.key] = th;
+
+    if (S.sort.by === c.key) th.classList.add('sort-' + S.sort.dir);
+
+    // Right-align Size heading to match its right-aligned cell values
+    if (c.key === 'size') th.style.textAlign = 'right';
+
+    // Label — click to sort
+    const label = document.createElement('span');
+    label.textContent = c.label;
+    label.style.cssText = 'display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:calc(100% - 10px);';
+    label.addEventListener('click', () => {
+      if (S.sort.by === c.key) S.sort.dir = S.sort.dir === 'asc' ? 'desc' : 'asc';
+      else { S.sort.by = c.key; S.sort.dir = 'asc'; }
+      saveDirSettings();
+      loadDir(S.path);
+    });
+    th.appendChild(label);
+
+    // Resize handle — 6px strip on the right edge of each th
+    const handle = document.createElement('div');
+    handle.className = 'col-resize-handle';
+    handle.title = 'Drag to resize · Double-click to reset';
+
+    handle.addEventListener('click',   e => e.stopPropagation());
+
+    handle.addEventListener('dblclick', e => {
+      e.stopPropagation();
+      delete S.columnWidths[c.key];
+      if (c.defPx) thRefs[c.key].style.width = c.defPx + 'px';
+      else         thRefs[c.key].style.width = '';  // Name: auto again
+      saveDirSettings();
+    });
+
+    handle.addEventListener('mousedown', e => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Snapshot all columns as real px values from offsetWidth.
+      // th.offsetWidth is always valid; this freezes the layout
+      // before we start changing one column's width.
+      cols.forEach(c2 => {
+        const w = thRefs[c2.key].offsetWidth;
+        thRefs[c2.key].style.width = w + 'px';
+        S.columnWidths[c2.key] = w;
+      });
+
+      const startX = e.clientX;
+      const startW = thRefs[c.key].offsetWidth;   // read AFTER snapshot — always a real px value
+
+      handle.classList.add('dragging');
+      document.body.classList.add('col-resizing');
+
+      function onMove(ev) {
+        const newW = Math.max(c.minW, startW + ev.clientX - startX);
+        thRefs[c.key].style.width = newW + 'px';
+        S.columnWidths[c.key] = newW;
+      }
+      function onUp() {
+        handle.classList.remove('dragging');
+        document.body.classList.remove('col-resizing');
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup',   onUp);
+        logColWidths();
+        saveDirSettings();
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup',   onUp);
+    });
+
+    th.appendChild(handle);
+    hr.appendChild(th);
+  });
+
+  thead.appendChild(hr);
+  tbl.appendChild(thead);
+
+  // ── tbody ───────────────────────────────────────────────────
+  const tbody = document.createElement('tbody');
+  entries.forEach(entry => {
+    const tr = document.createElement('tr');
+    tr.dataset.path  = entry.path;
+    tr.dataset.isdir = entry.isDir ? '1' : '0';
+    if (S.selected.has(entry.path)) tr.classList.add('selected');
+
+    // Name cell
+    const tdName = document.createElement('td');
+    tdName.className = 'td-name';
+    const nc = document.createElement('div');
+    nc.className = 'dt-name-cell';
+    const ic = document.createElement('div');
+    ic.className = 'dt-icon';
+    ic.innerHTML = getIconSmall(entry);
+    const nm = document.createElement('span');
+    nm.textContent = entry.name;
+    nc.appendChild(ic); nc.appendChild(nm);
+    if (entry.isSymlink) nm.style.fontStyle = 'italic';
+    tdName.appendChild(nc);
+    tr.appendChild(tdName);
+
+    const tdSize = document.createElement('td');
+    tdSize.className = 'td-size';
+    tdSize.textContent = entry.isDir ? '—' : entry.sizeHuman;
+    tr.appendChild(tdSize);
+
+    const tdType = document.createElement('td');
+    tdType.className = 'td-type';
+    tdType.textContent = mimeLabel(entry);
+    tr.appendChild(tdType);
+
+    const tdMod = document.createElement('td');
+    tdMod.className = 'td-modified';
+    tdMod.textContent = fmtDate(entry.modified);
+    tr.appendChild(tdMod);
+
+    const tdPerm = document.createElement('td');
+    tdPerm.className = 'td-perms';
+    tdPerm.textContent = entry.mode || '—';
+    tr.appendChild(tdPerm);
+
+    tr.addEventListener('click',      e => selectItem(entry.path, e));
+    tr.addEventListener('dblclick',   () => openEntry(entry));
+    tr.addEventListener('contextmenu',e => { e.preventDefault(); if (!S.selected.has(entry.path)) selectItem(entry.path, new MouseEvent('click')); showCtxMenu(e, entry); });
+
+    tbody.appendChild(tr);
+  });
+
+  tbl.appendChild(tbody);
+  wrap.appendChild(tbl);
+  fileView.appendChild(wrap);
+  logColWidths();
+}
+
+function mimeLabel(entry) {
+  if (entry.isDir) return 'Folder';
+  const m = entry.mimeType || '';
+  const ext = (entry.name.split('.').pop() || '').toUpperCase();
+  const map = {
+    'image/jpeg':'JPEG Image','image/png':'PNG Image','image/gif':'GIF Image',
+    'image/webp':'WebP Image','image/svg+xml':'SVG Image',
+    'video/mp4':'MP4 Video','video/x-matroska':'Matroska Video','video/webm':'WebM Video',
+    'audio/mpeg':'MP3 Audio','audio/flac':'FLAC Audio','audio/ogg':'OGG Audio',
+    'application/pdf':'PDF Document','application/zip':'ZIP Archive',
+    'application/gzip':'Gzip Archive','application/x-tar':'Tar Archive',
+    'application/x-7z-compressed':'7-Zip Archive','application/x-bzip2':'BZ2 Archive',
+    'text/plain':'Text File','text/html':'HTML File','text/css':'CSS File',
+    'text/javascript':'JavaScript File','text/x-python':'Python Script',
+    'text/x-rustsrc':'Rust Source','text/x-go':'Go Source',
+    'text/markdown':'Markdown File','application/json':'JSON File',
+    'text/yaml':'YAML File','application/xml':'XML File',
+    'inode/directory':'Folder',
+    'application/x-sh':'Shell Script',
+    'application/x-sqlite3':'SQLite Database',
+  };
+  return map[m] || (ext ? `${ext} File` : 'Unknown');
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' })
+       + ' ' + d.toLocaleTimeString(undefined, { hour:'2-digit', minute:'2-digit' });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SELECTION
+// ══════════════════════════════════════════════════════════════
+function selectItem(p, e) {
+  if (e.ctrlKey || e.metaKey) {
+    S.selected.has(p) ? S.selected.delete(p) : S.selected.add(p);
+  } else if (e.shiftKey && S.selected.size > 0) {
+    // Range select
+    const lastSel = [...S.selected].pop();
+    const idx1 = S.entries.findIndex(en => en.path === lastSel);
+    const idx2 = S.entries.findIndex(en => en.path === p);
+    if (idx1 >= 0 && idx2 >= 0) {
+      const lo = Math.min(idx1, idx2), hi = Math.max(idx1, idx2);
+      for (let i = lo; i <= hi; i++) S.selected.add(S.entries[i].path);
+    }
+  } else {
+    S.selected.clear();
+    S.selected.add(p);
+  }
+  refreshSelection();
+  updateStatus();
+}
+
+function selectAll() {
+  S.entries.forEach(e => S.selected.add(e.path));
+  refreshSelection();
+  updateStatus();
+}
+
+function clearSelection() {
+  S.selected.clear();
+  refreshSelection();
+  updateStatus();
+}
+
+function refreshSelection() {
+  // Icons/compact
+  $$('.file-item', fileView).forEach(el => {
+    el.classList.toggle('selected', S.selected.has(el.dataset.path));
+  });
+  // Details
+  $$('tr[data-path]', fileView).forEach(tr => {
+    tr.classList.toggle('selected', S.selected.has(tr.dataset.path));
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  STATUS BAR
+// ══════════════════════════════════════════════════════════════
+function updateStatus() {
+  const total = S.entries.length;
+  const dirs  = S.entries.filter(e => e.isDir).length;
+  const files = total - dirs;
+  const selN  = S.selected.size;
+
+  let txt = '';
+  if (selN > 0) {
+    const selEntries = S.entries.filter(e => S.selected.has(e.path));
+    const selSize = selEntries.reduce((s, e) => s + (e.size || 0), 0);
+    txt = `${selN} of ${total} selected`;
+    if (selSize > 0) txt += ` (${humanSize(selSize)})`;
+  } else {
+    if (dirs > 0 && files > 0) txt = `${dirs} folder${dirs !== 1 ? 's' : ''}, ${files} file${files !== 1 ? 's' : ''}`;
+    else if (dirs > 0) txt = `${dirs} folder${dirs !== 1 ? 's' : ''}`;
+    else txt = `${files} file${files !== 1 ? 's' : ''}`;
+  }
+  statusInfo.textContent = txt;
+}
+
+function humanSize(b) {
+  if (b === 0) return '0 B';
+  const k = 1024, s = ['B','KiB','MiB','GiB','TiB'];
+  const i = Math.floor(Math.log(b) / Math.log(k));
+  return (b / Math.pow(k, i)).toFixed(i === 0 ? 0 : 1) + ' ' + s[i];
+}
+
+// ══════════════════════════════════════════════════════════════
+//  CONTEXT MENU
+// ══════════════════════════════════════════════════════════════
+function showCtxMenu(e, entry) {
+  const onEntry = !!entry;
+  const selPaths = [...S.selected];
+  const multi = selPaths.length > 1;
+
+  const items = [];
+
+  if (onEntry && entry.isDir && !multi) {
+    items.push({ label: 'Open',          icon: '📂', action: () => openEntry(entry) });
+    items.push({ label: 'Open in New Window', icon: '🔲', action: () => {} });
+    items.push('sep');
+  } else if (onEntry && !entry.isDir && !multi) {
+    items.push({ label: 'Open',          icon: '📄', action: () => openEntry(entry) });
+    items.push('sep');
+  }
+
+  if (onEntry) {
+    items.push({ label: 'Cut',           icon: '✂️',  action: () => cutItems(selPaths) });
+    items.push({ label: 'Copy',          icon: '📋', action: () => copyItems(selPaths) });
+  }
+  items.push({ label: 'Paste',           icon: '📌', action: () => pasteItems(),
+                disabled: !S.clipboard });
+  if (onEntry) {
+    items.push('sep');
+    if (!multi) {
+      items.push({ label: 'Rename',      icon: '✏️', action: () => startRename(entry) });
+    }
+    items.push({ label: multi ? `Delete (${selPaths.length})` : 'Delete',
+                  icon: '🗑️', action: () => deletePrompt(selPaths), cls: 'danger' });
+  }
+
+  items.push('sep');
+  items.push({ label: 'New Folder',      icon: '📁', action: () => newFolderPrompt() });
+  if (onEntry && !multi) {
+    items.push('sep');
+    items.push({ label: 'Properties',   icon: 'ℹ️', action: () => showProperties(entry) });
+  }
+
+  ctxMenu.innerHTML = '';
+  items.forEach(it => {
+    if (it === 'sep') {
+      ctxMenu.insertAdjacentHTML('beforeend', '<div class="ctx-sep"></div>');
+    } else {
+      const el = document.createElement('div');
+      el.className = 'ctx-item' + (it.cls ? ' ' + it.cls : '') + (it.disabled ? ' disabled' : '');
+      el.innerHTML = `<span class="ctx-icon">${it.icon}</span><span>${it.label}</span>`;
+      if (!it.disabled) el.addEventListener('click', () => { hideCtx(); it.action(); });
+      ctxMenu.appendChild(el);
+    }
+  });
+
+  // Position
+  ctxMenu.classList.add('visible');
+  const w = ctxMenu.offsetWidth, h = ctxMenu.offsetHeight;
+  let x = e.clientX, y = e.clientY;
+  if (x + w > window.innerWidth)  x = window.innerWidth  - w - 4;
+  if (y + h > window.innerHeight) y = window.innerHeight - h - 4;
+  ctxMenu.style.left = x + 'px';
+  ctxMenu.style.top  = y + 'px';
+}
+
+function hideCtx() { ctxMenu.classList.remove('visible'); }
+
+document.addEventListener('click',   e => { if (!ctxMenu.contains(e.target)) hideCtx(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { hideCtx(); if (S.editingPath) exitPathEdit(); } });
+
+fileView.addEventListener('contextmenu', e => {
+  if (e.target === fileView || e.target.classList.contains('file-grid')) {
+    e.preventDefault();
+    clearSelection();
+    showCtxMenu(e, null);
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+//  FILE OPERATIONS
+// ══════════════════════════════════════════════════════════════
+async function openEntry(entry) {
+  if (S.renaming) { cancelRename(); return; }
+  if (entry.isDir) { navigate(entry.path); return; }
+  // For files: show a "can't open" note in status
+  statusInfo.textContent = `Cannot open ${entry.name} — open from terminal`;
+  setTimeout(updateStatus, 2500);
+}
+
+function cutItems(paths) {
+  S.clipboard = { paths, mode: 'cut' };
+  statusInfo.textContent = `${paths.length} item${paths.length !== 1 ? 's' : ''} cut`;
+  setTimeout(updateStatus, 2000);
+}
+function copyItems(paths) {
+  S.clipboard = { paths, mode: 'copy' };
+  statusInfo.textContent = `${paths.length} item${paths.length !== 1 ? 's' : ''} copied`;
+  setTimeout(updateStatus, 2000);
+}
+async function pasteItems() {
+  if (!S.clipboard) return;
+  const { paths, mode } = S.clipboard;
+  statusInfo.textContent = 'Pasting…';
+  for (const src of paths) {
+    const name = src.split('/').pop();
+    const dest = S.path.replace(/\/$/, '') + '/' + name;
+    try {
+      if (mode === 'copy') await apiCopy(src, dest);
+      else await apiRename(src, dest);
+    } catch {}
+  }
+  if (mode === 'cut') S.clipboard = null;
+  await refresh();
+}
+
+async function deletePrompt(paths) {
+  const n = paths.length;
+  const label = n === 1
+    ? `"${paths[0].split('/').pop()}"`
+    : `${n} items`;
+  showDialog({
+    title: '🗑️  Move to Trash',
+    body:  `Are you sure you want to permanently delete ${label}?`,
+    footer: [
+      { label: 'Cancel', cls: '' },
+      { label: 'Delete', cls: 'danger', action: async () => {
+          await apiDelete(paths);
+          S.selected.clear();
+          await refresh();
+        }
+      },
+    ]
+  });
+}
+
+function newFolderPrompt() {
+  showDialog({
+    title: '📁  Create New Folder',
+    input: { placeholder: 'Folder name', value: 'New Folder' },
+    footer: [
+      { label: 'Cancel', cls: '' },
+      { label: 'Create', cls: 'primary', action: async (val) => {
+          if (!val.trim()) return;
+          const p = S.path.replace(/\/$/, '') + '/' + val.trim();
+          await apiMkdir(p);
+          await refresh();
+        }
+      },
+    ]
+  });
+}
+
+// ── Inline rename ──────────────────────────────────────────
+function startRename(entry) {
+  cancelRename();
+  S.renaming = entry.path;
+
+  if (S.view === 'details') {
+    const tds = $$('tr[data-path] .dt-name-cell span', fileView);
+    for (const td of tds) {
+      if (td.closest('tr').dataset.path === entry.path) {
+        const old = td.textContent;
+        td.style.display = 'none';
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.className = 'fi-name-input';
+        inp.style.width = '160px';
+        inp.style.textAlign = 'left';
+        inp.value = old;
+        td.parentNode.appendChild(inp);
+        inp.focus();
+        const dotIdx = inp.value.lastIndexOf('.');
+        inp.setSelectionRange(0, dotIdx > 0 ? dotIdx : inp.value.length);
+        inp.addEventListener('blur',    () => commitRename(inp, entry, td));
+        inp.addEventListener('keydown', e => {
+          if (e.key === 'Enter')  { e.preventDefault(); commitRename(inp, entry, td); }
+          if (e.key === 'Escape') { e.stopPropagation(); cancelRename(); }
+        });
+        break;
+      }
+    }
+  } else {
+    const items = $$('.file-item', fileView);
+    for (const item of items) {
+      if (item.dataset.path === entry.path) {
+        const nameDiv = item.querySelector('.fi-name');
+        const old = nameDiv.textContent;
+        nameDiv.style.display = 'none';
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.className = 'fi-name-input';
+        inp.value = old;
+        item.appendChild(inp);
+        inp.focus();
+        const dotIdx = inp.value.lastIndexOf('.');
+        inp.setSelectionRange(0, dotIdx > 0 ? dotIdx : inp.value.length);
+        inp.addEventListener('blur',    () => commitRename(inp, entry, nameDiv));
+        inp.addEventListener('keydown', e => {
+          if (e.key === 'Enter')  { e.preventDefault(); commitRename(inp, entry, nameDiv); }
+          if (e.key === 'Escape') { e.stopPropagation(); cancelRename(); }
+        });
+        break;
+      }
+    }
+  }
+}
+
+async function commitRename(inp, entry, nameEl) {
+  if (!S.renaming) return;
+  S.renaming = null;
+  const newName = inp.value.trim();
+  inp.remove();
+  if (nameEl) nameEl.style.display = '';
+  if (!newName || newName === entry.name) return;
+  const dir  = entry.path.substring(0, entry.path.lastIndexOf('/') + 1);
+  const dest = dir + newName;
+  try { await apiRename(entry.path, dest); await refresh(); } catch {}
+}
+
+function cancelRename() {
+  S.renaming = null;
+  $$('.fi-name-input', fileView).forEach(el => {
+    const nm = el.previousSibling || el.parentNode.querySelector('.fi-name');
+    if (nm) nm.style.display = '';
+    el.remove();
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PROPERTIES DIALOG
+// ══════════════════════════════════════════════════════════════
+async function showProperties(entry) {
+  showDialog({ title: 'Loading properties…', body: '<div class="loading-wrap"><div class="spinner"></div></div>', footer: [{ label: 'Close', cls: '' }] });
+  try {
+    const s = await apiStat(entry.path);
+    const rows = [
+      ['Name',         s.name],
+      ['Path',         s.path],
+      ['Type',         s.isDir ? 'Folder' : mimeLabel(s)],
+      ['Size',         s.isDir ? '—' : `${s.sizeHuman} (${s.size.toLocaleString()} bytes)`],
+      ['Modified',     fmtDate(s.modified)],
+      ['Created',      fmtDate(s.created)],
+      ['Last Accessed',fmtDate(s.accessed)],
+      ['Permissions',  s.mode],
+      ['Owner UID',    String(s.uid)],
+      ['Group GID',    String(s.gid)],
+      s.isSymlink ? ['Symlink Target', s.symlinkTarget] : null,
+    ].filter(Boolean);
+
+    const rowsHtml = rows.map(([l,v]) =>
+      `<div class="prop-row"><span class="prop-label">${l}</span><span class="prop-value">${escHtml(String(v))}</span></div>`
+    ).join('');
+
+    showDialog({
+      title: `${s.isDir ? '📂' : '📄'} Properties — ${escHtml(s.name)}`,
+      body:  rowsHtml,
+      footer: [{ label: 'Close', cls: '' }]
+    });
+  } catch {}
+}
+
+// ══════════════════════════════════════════════════════════════
+//  GENERIC DIALOG
+// ══════════════════════════════════════════════════════════════
+function showDialog({ title, body, input, footer }) {
+  let inputEl = null;
+  const btns = (footer || []).map(f => {
+    const b = document.createElement('button');
+    b.className = 'btn ' + (f.cls || '');
+    b.textContent = f.label;
+    b.addEventListener('click', () => {
+      closeDialog();
+      if (f.action) {
+        const val = inputEl ? inputEl.value : undefined;
+        f.action(val);
+      }
+    });
+    return b;
+  });
+
+  dlgBox.innerHTML = `
+    <div class="dialog-title">${title}</div>
+    <div class="dialog-body">${body || ''}${input ? `<input class="dialog-input" type="text" placeholder="${input.placeholder||''}" value="${escHtml(input.value||'')}">` : ''}</div>
+    <div class="dialog-footer"></div>
+  `;
+  const footer2 = dlgBox.querySelector('.dialog-footer');
+  btns.forEach(b => footer2.appendChild(b));
+
+  if (input) {
+    inputEl = dlgBox.querySelector('.dialog-input');
+    inputEl.focus();
+    const dotIdx = inputEl.value.lastIndexOf('.');
+    inputEl.setSelectionRange(0, dotIdx > 0 ? dotIdx : inputEl.value.length);
+    inputEl.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const okBtn = btns.find(b => b.classList.contains('primary'));
+        okBtn?.click();
+      }
+      if (e.key === 'Escape') closeDialog();
+    });
+  }
+
+  dlgOverlay.classList.add('visible');
+}
+
+function closeDialog() {
+  dlgOverlay.classList.remove('visible');
+}
+dlgOverlay.addEventListener('click', e => { if (e.target === dlgOverlay) closeDialog(); });
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SEARCH
+// ══════════════════════════════════════════════════════════════
+function enterSearchMode() {
+  S.searchMode = true;
+  searchBar.classList.remove('hidden');
+  btnSearch.classList.add('active');
+  searchInput.focus();
+}
+function exitSearchMode() {
+  S.searchMode = false;
+  searchBar.classList.add('hidden');
+  btnSearch.classList.remove('active');
+  searchInput.value = '';
+}
+
+const btnSearchRegex  = $('btn-search-regex');
+const btnSearchCase   = $('btn-search-case');
+const btnSearchHidden = $('btn-search-hidden');
+
+btnSearchRegex.addEventListener('click',  () => { btnSearchRegex.classList.toggle('active');  doSearch(); });
+btnSearchCase.addEventListener('click',   () => { btnSearchCase.classList.toggle('active');   doSearch(); });
+btnSearchHidden.addEventListener('click', () => { btnSearchHidden.classList.toggle('active'); doSearch(); });
+
+let searchTimer = null;
+searchInput.addEventListener('input', doSearch);
+
+// Runs the search immediately (no debounce) — called by doSearch timer and by refresh()
+async function execSearch() {
+  const q = searchInput.value.trim();
+  if (!q) { await loadDir(S.path); return; }
+  const useRegex   = btnSearchRegex.classList.contains('active');
+  const caseSens   = btnSearchCase.classList.contains('active');
+  const showHidden = btnSearchHidden.classList.contains('active');
+  const scrollTop  = fileView.scrollTop;
+  fileView.innerHTML = '<div class="loading-wrap"><div class="spinner"></div> Searching…</div>';
+  try {
+    const data = await apiSearch(S.path, q, useRegex, caseSens, showHidden);
+    S.entries = data.results;
+    renderFiles(data);
+    fileView.scrollTop = scrollTop;
+    statusInfo.textContent = `${data.results.length} result${data.results.length !== 1 ? 's' : ''}${data.truncated ? ' (truncated)' : ''}`;
+  } catch {}
+}
+
+function doSearch() {
+  clearTimeout(searchTimer);
+  const q = searchInput.value.trim();
+  searchInput.classList.remove('invalid');
+
+  if (!q) { loadDir(S.path); return; }
+
+  const useRegex = btnSearchRegex.classList.contains('active');
+
+  // Client-side validation for instant feedback
+  if (useRegex) {
+    try { new RegExp(q); }
+    catch { searchInput.classList.add('invalid'); return; }
+  } else {
+    // Glob: check for unclosed character class
+    if ((q.match(/\[/g) || []).length !== (q.match(/\]/g) || []).length) {
+      searchInput.classList.add('invalid'); return;
+    }
+  }
+
+  searchTimer = setTimeout(execSearch, 350);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  VIEW MODES
+// ══════════════════════════════════════════════════════════════
+function setView(v) {
+  S.view = v;
+  fileView.className = `view-${v}`;
+  updateViewButtons();
+  refresh();
+  saveDirSettings();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ZOOM
+// ══════════════════════════════════════════════════════════════
+zoomRange.addEventListener('input', () => {
+  S.zoom = parseFloat(zoomRange.value);
+  if (S.view !== 'details') refresh();
+  saveDirSettings();
+});
+
+// ══════════════════════════════════════════════════════════════
+//  KEYBOARD SHORTCUTS
+// ══════════════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  const inInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
+
+  if (inInput && e.target !== fileView) return; // let inputs handle their own keys
+
+  if (e.altKey && e.key === 'ArrowLeft')  { e.preventDefault(); goBack();    return; }
+  if (e.altKey && e.key === 'ArrowRight') { e.preventDefault(); goForward(); return; }
+  if (e.altKey && e.key === 'ArrowUp')    { e.preventDefault(); goUp();      return; }
+
+  if (e.key === 'Backspace' && !inInput) { e.preventDefault(); goUp(); return; }
+  if (e.key === 'F5')          { refresh(); return; }
+  if (e.key === 'F2' && !inInput) {
+    const sel = [...S.selected];
+    if (sel.length === 1) { const en = S.entries.find(e2 => e2.path === sel[0]); if (en) startRename(en); }
+    return;
+  }
+  if (e.key === 'Delete' && !inInput) {
+    const sel = [...S.selected];
+    if (sel.length) deletePrompt(sel);
+    return;
+  }
+  if (e.ctrlKey || e.metaKey) {
+    switch(e.key.toLowerCase()) {
+      case 'a': e.preventDefault(); selectAll(); break;
+      case 'c': { const s = [...S.selected]; if (s.length) copyItems(s); break; }
+      case 'x': { const s = [...S.selected]; if (s.length) cutItems(s); break; }
+      case 'v': pasteItems(); break;
+      case 'h': e.preventDefault(); toggleHidden(); break;
+      case 'f': e.preventDefault(); enterSearchMode(); break;
+      case 'l': e.preventDefault(); enterPathEdit(); break;
+      case 'n': if (e.shiftKey) { e.preventDefault(); newFolderPrompt(); } break;
+      case '1': e.preventDefault(); setView('icons'); break;
+      case '2': e.preventDefault(); setView('compact'); break;
+      case '3': e.preventDefault(); setView('details'); break;
+    }
+    return;
+  }
+});
+
+fileView.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const sel = [...S.selected];
+    if (sel.length === 1) { const en = S.entries.find(e2 => e2.path === sel[0]); if (en) openEntry(en); }
+  }
+});
+
+// Click on empty area in fileView to deselect
+fileView.addEventListener('mousedown', e => {
+  if (e.target === fileView || e.target.classList.contains('file-grid') || e.target.tagName === 'TABLE') {
+    if (!e.ctrlKey && !e.metaKey) clearSelection();
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+//  TOOLBAR BUTTON EVENTS
+// ══════════════════════════════════════════════════════════════
+btnBack.addEventListener('click',     goBack);
+btnForward.addEventListener('click',  goForward);
+btnUp.addEventListener('click',       goUp);
+btnRefresh.addEventListener('click',  refresh);
+btnSearch.addEventListener('click',   () => S.searchMode ? exitSearchMode() : enterSearchMode());
+searchClose.addEventListener('click', () => { exitSearchMode(); refresh(); });
+btnNewfolder.addEventListener('click', newFolderPrompt);
+btnViewIco.addEventListener('click',  () => setView('icons'));
+btnViewComp.addEventListener('click', () => setView('compact'));
+btnViewDet.addEventListener('click',  () => setView('details'));
+
+btnHidden.addEventListener('click', toggleHidden);
+function toggleHidden() {
+  S.showHidden = !S.showHidden;
+  btnHidden.classList.toggle('active', S.showHidden);
+  refresh();
+  saveDirSettings();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ERROR TOAST
+// ══════════════════════════════════════════════════════════════
+function showErr(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = `
+    position:fixed; bottom:40px; right:16px; z-index:9999;
+    background:#da4453; color:#fff; border-radius:5px;
+    padding:8px 16px; font-size:12.5px; max-width:320px;
+    box-shadow:0 4px 16px rgba(0,0,0,.5);
+    animation: slideIn .2s ease;
+  `;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DRAG SELECTION
+// ══════════════════════════════════════════════════════════════
+let dragSel = null;
+fileView.addEventListener('mousedown', e => {
+  if (e.button !== 0) return;
+  const item = e.target.closest('.file-item, tr[data-path]');
+  if (item) return;
+  dragSel = { x: e.clientX, y: e.clientY };
+  if (!e.ctrlKey && !e.metaKey) clearSelection();
+});
+
+document.addEventListener('mousemove', e => {
+  if (!dragSel) return;
+  const x1 = Math.min(dragSel.x, e.clientX);
+  const y1 = Math.min(dragSel.y, e.clientY);
+  const x2 = Math.max(dragSel.x, e.clientX);
+  const y2 = Math.max(dragSel.y, e.clientY);
+  selBox.style.cssText = `display:block;left:${x1}px;top:${y1}px;width:${x2-x1}px;height:${y2-y1}px;`;
+});
+
+document.addEventListener('mouseup', e => {
+  if (!dragSel) return;
+  selBox.style.display = 'none';
+  const rect = selBox.getBoundingClientRect();
+  if (rect.width > 5 || rect.height > 5) {
+    $$('.file-item, tr[data-path]', fileView).forEach(el => {
+      const r = el.getBoundingClientRect();
+      if (r.left < rect.right && r.right > rect.left && r.top < rect.bottom && r.bottom > rect.top) {
+        S.selected.add(el.dataset.path);
+      }
+    });
+    refreshSelection();
+    updateStatus();
+  }
+  dragSel = null;
+});
+
+window.addEventListener('beforeunload', () => {
+  clearTimeout(_saveTimer);
+  clearTimeout(_geoTimer);
+
+  // Save current dir settings
+  if (S.path) {
+    const payload = JSON.stringify({
+      path: S.path,
+      settings: { view: S.view, sort: S.sort, showHidden: S.showHidden, zoom: S.zoom },
+    });
+    navigator.sendBeacon('/api/settings', new Blob([payload], { type: 'application/json' }));
+  }
+
+  // Save window geometry to startDir
+  if (S.startDir) {
+    const geoPayload = JSON.stringify({
+      path: S.startDir,
+      settings: { window: { w: window.outerWidth, h: window.outerHeight, x: window.screenX, y: window.screenY } },
+    });
+    navigator.sendBeacon('/api/settings', new Blob([geoPayload], { type: 'application/json' }));
+  }
+
+  navigator.sendBeacon('/api/shutdown');
+});
+// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
+//  TOOLTIP  — fixed-position, always within viewport
+// ══════════════════════════════════════════════════════════════
+function initTooltip() {
+  const tip = $('tooltip');
+  const GAP = 8;    // px gap between anchor and tooltip
+  let hideTimer = null;
+
+  function show(anchor) {
+    clearTimeout(hideTimer);
+    const text = anchor.getAttribute('data-tip');
+    if (!text) return;
+
+    tip.textContent = text;
+    tip.style.display = 'block';
+
+    const aRect = anchor.getBoundingClientRect();
+    const tRect = tip.getBoundingClientRect();
+    const vw = window.innerWidth, vh = window.innerHeight;
+
+    // Prefer below anchor; flip above if it would overflow bottom
+    let top = aRect.bottom + GAP;
+    if (top + tRect.height > vh - 4) top = aRect.top - tRect.height - GAP;
+    // Clamp to viewport vertically
+    top = Math.max(4, Math.min(top, vh - tRect.height - 4));
+
+    // Centre on anchor horizontally; clamp to viewport
+    let left = aRect.left + aRect.width / 2 - tRect.width / 2;
+    left = Math.max(4, Math.min(left, vw - tRect.width - 4));
+
+    tip.style.top  = top  + 'px';
+    tip.style.left = left + 'px';
+  }
+
+  function hide() {
+    hideTimer = setTimeout(() => { tip.style.display = 'none'; }, 80);
+  }
+
+  document.addEventListener('mouseover', e => {
+    const anchor = e.target.closest('[data-tip]');
+    if (anchor) show(anchor); else hide();
+  });
+  document.addEventListener('mouseout', e => {
+    // Don't hide if the mouse is moving to another element still inside a [data-tip]
+    if (e.relatedTarget && e.relatedTarget.closest('[data-tip]')) return;
+    hide();
+  });
+  document.addEventListener('mousedown', () => { tip.style.display = 'none'; });
+  document.addEventListener('scroll',    () => { tip.style.display = 'none'; }, true);
+}
+
+// ── Heartbeat — close window if server disappears ─────────────
+function startHeartbeat() {
+  let failures = 0;
+  setInterval(async () => {
+    try {
+      await fetch('/api/ping', { cache: 'no-store' });
+      failures = 0;
+    } catch {
+      if (++failures >= 2) window.close();
+    }
+  }, 1500);
+}
+
+async function init() {
+  initTooltip();
+  const { home } = await apiHome();
+  S.startDir = home;
+
+  // Restore window geometry from startDir's .dolphin-lite-web.json before first render
+  const { settings } = await apiSettingsGet(home).catch(() => ({ settings: null }));
+  restoreWindowGeometry(settings);
+
+  await Promise.all([
+    loadPlaces(),
+    navigate(home),
+  ]);
+
+  startHeartbeat();
+}
+
+init();
+</script>
+</body>
+</html>

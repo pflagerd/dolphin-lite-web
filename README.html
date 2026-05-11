@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dolphin Lite Web — README</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;800&display=swap');
+
+:root {
+  --bg:          #1b2224;
+  --bg-panel:    #232629;
+  --bg-card:     #2a2e32;
+  --bg-code:     #181c1e;
+  --border:      #31363b;
+  --border-hi:   #3d4347;
+  --accent:      #1d99f3;
+  --accent-dim:  rgba(29,153,243,.15);
+  --accent-gold: #f0ba32;
+  --accent-gold-dim: rgba(240,186,50,.12);
+  --text:        #eff0f1;
+  --text-2:      #a1acaf;
+  --text-3:      #6d7a7d;
+  --green:       #27ae60;
+  --orange:      #f67400;
+  --red:         #da4453;
+  --font-display:'Syne', sans-serif;
+  --font-mono:   'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 15px;
+  line-height: 1.7;
+  min-height: 100vh;
+  padding: 0 0 80px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Header ── */
+header {
+  position: relative;
+  overflow: hidden;
+  padding: 64px 48px 52px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-panel);
+}
+
+header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 80% at 10% 50%, rgba(29,153,243,.10) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 90% 20%, rgba(240,186,50,.07) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.header-inner {
+  position: relative;
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.logo {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+}
+
+.header-text h1 {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  background: linear-gradient(120deg, var(--text) 40%, var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header-text .subtitle {
+  margin-top: 6px;
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.badges {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border: 1px solid;
+}
+.badge-blue   { background: var(--accent-dim);      border-color: rgba(29,153,243,.3);  color: var(--accent); }
+.badge-gold   { background: var(--accent-gold-dim); border-color: rgba(240,186,50,.3);  color: var(--accent-gold); }
+.badge-green  { background: rgba(39,174,96,.12);    border-color: rgba(39,174,96,.3);   color: var(--green); }
+
+/* ── Main content ── */
+main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+/* ── Quick-start box ── */
+.quickstart {
+  margin-top: 40px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-hi);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: 24px 28px;
+}
+
+.quickstart h2 {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.step {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.step-num {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.step code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  color: var(--accent-gold);
+}
+
+.step-note {
+  color: var(--text-2);
+  font-size: 13.5px;
+}
+
+/* ── Section heading ── */
+.section-label {
+  margin-top: 52px;
+  margin-bottom: 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── File table ── */
+.file-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.file-table thead tr {
+  border-bottom: 1px solid var(--border-hi);
+}
+
+.file-table th {
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.file-table tbody tr {
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  transition: background 0.1s;
+}
+.file-table tbody tr:hover { background: rgba(255,255,255,.03); }
+
+.file-table td {
+  padding: 11px 12px;
+  vertical-align: top;
+}
+
+.file-name {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--accent-gold);
+  white-space: nowrap;
+  padding-right: 24px;
+}
+
+.file-type {
+  white-space: nowrap;
+  padding-right: 20px;
+}
+
+.pill {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+.pill-server  { background: rgba(39,174,96,.15);   color: var(--green);       border: 1px solid rgba(39,174,96,.25); }
+.pill-client  { background: var(--accent-dim);     color: var(--accent);      border: 1px solid rgba(29,153,243,.25); }
+.pill-script  { background: rgba(246,116,0,.13);   color: var(--orange);      border: 1px solid rgba(246,116,0,.25); }
+.pill-config  { background: rgba(161,172,175,.1);  color: var(--text-2);      border: 1px solid rgba(161,172,175,.2); }
+.pill-doc     { background: var(--accent-gold-dim);color: var(--accent-gold); border: 1px solid rgba(240,186,50,.25); }
+
+.file-desc {
+  color: var(--text-2);
+  line-height: 1.55;
+  font-size: 13.5px;
+}
+
+.file-desc strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ── Keyboard shortcuts ── */
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 32px;
+  font-size: 13px;
+}
+
+.shortcut {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+
+.shortcut kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-hi);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 2px 7px;
+  color: var(--accent);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.shortcut span { color: var(--text-2); }
+
+/* ── Footer ── */
+footer {
+  max-width: 860px;
+  margin: 56px auto 0;
+  padding: 0 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-3);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+
+footer a { color: var(--accent); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+header        { animation: fadeUp .4s ease both; }
+.quickstart   { animation: fadeUp .4s .1s ease both; }
+.file-table   { animation: fadeUp .4s .18s ease both; }
+.shortcuts-grid { animation: fadeUp .4s .24s ease both; }
+
+@media (max-width: 600px) {
+  header, main { padding-left: 20px; padding-right: 20px; }
+  .header-inner { flex-direction: column; gap: 16px; }
+  .shortcuts-grid { grid-template-columns: 1fr; }
+  .file-table th:nth-child(2), .file-table td:nth-child(2) { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <svg class="logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="lg1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f0ba32"/>
+          <stop offset="1" stop-color="#c9991e"/>
+        </linearGradient>
+        <linearGradient id="lg2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#2baff8"/>
+          <stop offset="1" stop-color="#1d99f3"/>
+        </linearGradient>
+      </defs>
+      <!-- Folder body -->
+      <path d="M6 20a4 4 0 014-4h14l4 5h26a4 4 0 014 4v22a4 4 0 01-4 4H10a4 4 0 01-4-4V20z" fill="url(#lg1)"/>
+      <path d="M6 30h52v12a4 4 0 01-4 4H10a4 4 0 01-4-4V30z" fill="#c9991e" opacity=".22"/>
+      <!-- Dolphin fin silhouette -->
+      <path d="M24 34 Q32 18 44 26 Q38 28 36 34z" fill="url(#lg2)" opacity=".92"/>
+      <circle cx="44" cy="26" r="2.5" fill="#2baff8" opacity=".7"/>
+    </svg>
+    <div class="header-text">
+      <h1>Dolphin Lite Web</h1>
+      <div class="subtitle">A KDE Dolphin–style file explorer · Node.js + Express · Breeze Dark theme</div>
+      <div class="badges">
+        <span class="badge badge-blue">Node.js</span>
+        <span class="badge badge-blue">Express 4</span>
+        <span class="badge badge-gold">Breeze Dark</span>
+        <span class="badge badge-green">No build step</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- Quick start -->
+  <div class="quickstart">
+    <h2>Quick Start</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-note">Run <code>./setmeup</code> — installs Node dependencies and <code>nodemon</code> if needed.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-note">Run <code>./runme</code> — picks a random port, launches Chrome, and starts the server with live-reload.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-note">Browse your filesystem. Edit <code>server.js</code> or <code>index.html</code> and the server restarts automatically.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Files -->
+  <div class="section-label">Project files</div>
+
+  <table class="file-table">
+    <thead>
+      <tr>
+        <th>File</th>
+        <th>Type</th>
+        <th>Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <tr>
+        <td class="file-name">server.js</td>
+        <td class="file-type"><span class="pill pill-server">server</span></td>
+        <td class="file-desc">
+          <strong>Express HTTP server and REST API.</strong>
+          Serves <code>index.html</code> and exposes seven JSON endpoints:
+          <code>/api/home</code> (current user's home directory),
+          <code>/api/ls</code> (directory listing with sort and hidden-file support),
+          <code>/api/places</code> (sidebar locations including auto-detected mount points),
+          <code>/api/stat</code> (full metadata for a single path),
+          <code>/api/mkdir</code>, <code>/api/rename</code>, <code>/api/delete</code>, <code>/api/copy</code>,
+          and <code>/api/search</code> (recursive filename search up to depth 6).
+          Reads <code>PORT</code> from the environment so <code>runme</code> can supply a random port.
+        </td>
+      </tr>
+
+      <tr>
+        <td class="file-name">index.html</td>
+        <td class="file-type"><span class="pill pill-client">client</span></td>
+        <td class="file-desc">
+          <strong>The entire browser-side application — HTML, CSS, and JavaScript in one file.</strong>
+          Renders the Breeze Dark UI: toolbar with Back / Forward / Up / Refresh, a
+          clickable breadcrumb bar that switches to an editable path input on click (Ctrl+L),
+          a Places sidebar with section headers and active-item indicator, three view modes
+          (Icons, Compact, Details), inline rename, drag-box multi-selection, a context menu,
+          a Properties dialog, a live search panel, a zoom slider, and a status bar.
+          No framework or build step — runs as plain vanilla JS.
+        </td>
+      </tr>
+
+      <tr>
+        <td class="file-name">setmeup</td>
+        <td class="file-type"><span class="pill pill-script">script</span></td>
+        <td class="file-desc">
+          <strong>One-time (and safe-to-repeat) environment setup.</strong>
+          Checks that Node.js and npm are available, runs <code>npm install</code>
+          when <code>node_modules/</code> is absent or <code>package.json</code> is newer,
+          and installs <code>nodemon</code> globally if it is missing.
+          Always run this first on a fresh checkout.
+        </td>
+      </tr>
+
+      <tr>
+        <td class="file-name">runme</td>
+        <td class="file-type"><span class="pill pill-script">script</span></td>
+        <td class="file-desc">
+          <strong>Development launcher.</strong>
+          Picks a random port in the range 3000–9999, launches
+          <code>activity-google-chrome</code> (with <code>google-chrome</code> and
+          <code>chromium-browser</code> as fallbacks) pointed at
+          <code>http://localhost:&lt;port&gt;</code>, then starts
+          <code>nodemon</code> watching <code>server.js</code> and <code>index.html</code>
+          so the server restarts automatically on any save.
+        </td>
+      </tr>
+
+      <tr>
+        <td class="file-name">package.json</td>
+        <td class="file-type"><span class="pill pill-config">config</span></td>
+        <td class="file-desc">
+          <strong>npm project manifest.</strong>
+          Declares the single runtime dependency (<code>express</code>) and the
+          <code>npm start</code> script alias for <code>node server.js</code>.
+        </td>
+      </tr>
+
+      <tr>
+        <td class="file-name">package-lock.json</td>
+        <td class="file-type"><span class="pill pill-config">config</span></td>
+        <td class="file-desc">
+          <strong>Locked dependency tree.</strong>
+          Guarantees reproducible installs — every <code>npm install</code> resolves
+          to exactly the same versions regardless of when or where it runs.
+          Committed to version control; do not edit by hand.
+        </td>
+      </tr>
+
+      <tr>
+        <td class="file-name">.gitignore</td>
+        <td class="file-type"><span class="pill pill-config">config</span></td>
+        <td class="file-desc">
+          <strong>Git exclusion list.</strong>
+          Tells Git to ignore the <code>node_modules/</code> directory so the
+          hundreds of dependency files are never committed to the repository.
+        </td>
+      </tr>
+
+      <tr>
+        <td class="file-name">README.html</td>
+        <td class="file-type"><span class="pill pill-doc">doc</span></td>
+        <td class="file-desc">
+          <strong>This file.</strong>
+          Project documentation styled to match the Breeze Dark aesthetic of the app itself.
+          Open directly in a browser — no server required.
+        </td>
+      </tr>
+
+    </tbody>
+  </table>
+
+  <!-- Keyboard shortcuts -->
+  <div class="section-label">Keyboard shortcuts</div>
+
+  <div class="shortcuts-grid">
+    <div class="shortcut"><kbd>Alt ←</kbd>      <span>Go back</span></div>
+    <div class="shortcut"><kbd>Alt →</kbd>      <span>Go forward</span></div>
+    <div class="shortcut"><kbd>Alt ↑</kbd>      <span>Go up one level</span></div>
+    <div class="shortcut"><kbd>Backspace</kbd>  <span>Go up one level</span></div>
+    <div class="shortcut"><kbd>F5</kbd>         <span>Refresh current folder</span></div>
+    <div class="shortcut"><kbd>F2</kbd>         <span>Rename selected item</span></div>
+    <div class="shortcut"><kbd>Delete</kbd>     <span>Delete selected items</span></div>
+    <div class="shortcut"><kbd>Enter</kbd>      <span>Open selected item</span></div>
+    <div class="shortcut"><kbd>Ctrl A</kbd>     <span>Select all</span></div>
+    <div class="shortcut"><kbd>Ctrl C</kbd>     <span>Copy selection</span></div>
+    <div class="shortcut"><kbd>Ctrl X</kbd>     <span>Cut selection</span></div>
+    <div class="shortcut"><kbd>Ctrl V</kbd>     <span>Paste</span></div>
+    <div class="shortcut"><kbd>Ctrl H</kbd>     <span>Toggle hidden files</span></div>
+    <div class="shortcut"><kbd>Ctrl F</kbd>     <span>Open search bar</span></div>
+    <div class="shortcut"><kbd>Ctrl L</kbd>     <span>Edit location path</span></div>
+    <div class="shortcut"><kbd>Ctrl Shift N</kbd><span>New folder</span></div>
+    <div class="shortcut"><kbd>Ctrl 1</kbd>     <span>Icons view</span></div>
+    <div class="shortcut"><kbd>Ctrl 2</kbd>     <span>Compact view</span></div>
+    <div class="shortcut"><kbd>Ctrl 3</kbd>     <span>Details view</span></div>
+    <div class="shortcut"><kbd>Escape</kbd>     <span>Close menu / cancel edit</span></div>
+  </div>
+
+</main>
+
+<footer>
+  <span>dolphin-lite-web</span>
+  <span style="color:var(--border-hi)">·</span>
+  <span>Node.js + Express + Vanilla JS</span>
+  <span style="color:var(--border-hi)">·</span>
+  <span>Breeze Dark — KDE color palette</span>
+</footer>
+
+</body>
+</html>
