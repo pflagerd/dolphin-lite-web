@@ -8,8 +8,39 @@ const os      = require('os');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
+// Loopback only: the API can read, rename and delete any file this user can
+// reach and has no authentication, so it must never be reachable from the
+// network (#1). Deliberately not configurable via $HOST, which some shells and
+// systems export as the machine's hostname.
+const LISTEN_HOST = '127.0.0.1';
+const LOOPBACK_NAMES = new Set(['localhost', '127.0.0.1', '[::1]']);
+
+// Reject requests that did not come from this app's own page (#3):
+//  • Host must be a loopback name (blocks DNS-rebinding, where a hostile
+//    domain is re-pointed at 127.0.0.1 so its pages count as same-origin).
+//  • For anything other than GET/HEAD, browsers always send Origin
+//    (https://fetch.spec.whatwg.org/#origin-header); it must be this server's
+//    own origin. A missing Origin means a non-browser client (curl etc.),
+//    which is allowed since it can only come from this machine anyway.
+app.use((req, res, next) => {
+  const host = req.headers.host || '';
+  const hostname = host.replace(/:\d+$/, '');
+  if (!LOOPBACK_NAMES.has(hostname)) {
+    return res.status(403).json({ error: 'Forbidden: bad Host header' });
+  }
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    const origin = req.headers.origin;
+    if (origin !== undefined && origin !== `http://${host}`) {
+      return res.status(403).json({ error: 'Forbidden: cross-origin request' });
+    }
+  }
+  next();
+});
+
 app.use(express.json());
-app.use(express.static(__dirname));
+
+// Serve only the client page, not the whole project directory (#2).
+app.get('/', (_req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -443,7 +474,7 @@ app.post('/api/settings', (req, res) => {
 
 // ─── Start ───────────────────────────────────────────────────────────────────
 
-app.listen(PORT, () => {
+app.listen(PORT, LISTEN_HOST, () => {
   console.log(`\n  🐬 Dolphin File Explorer`);
   console.log(`  ──────────────────────────`);
   console.log(`  Open: http://localhost:${PORT}\n`);
