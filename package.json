@@ -1,5 +1,5 @@
 {
-  "name": "dolphin-file-explorer",
+  "name": "dolphin-lite-web",
   "version": "1.0.0",
   "description": "KDE Dolphin-style file manager in Node/Express",
   "main": "server.js",

@@ -17,9 +17,38 @@ fi
 "$SCRIPT_DIR/setmeup"
 echo ""
 
-# ── 3. Pick a random unprivileged port (3000–9999) ───────────────────────────
-export PORT=$(( RANDOM % 7000 + 3000 ))
+# ── 3. Pick a random free unprivileged port (3000–9999) ──────────────────────
+# A port counts as taken if something accepts a TCP connection on it (bash's
+# /dev/tcp, so no extra dependency such as nc). There is an unavoidable race:
+# another process could grab the port between this check and the server
+# binding it. Step 6 catches that case, because it only accepts an answer that
+# carries this launch's ID.
+port_in_use() {
+  (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null
+}
+PORT=""
+for (( try = 0; try < 50; try++ )); do
+  candidate=$(( RANDOM % 7000 + 3000 ))
+  if ! port_in_use "$candidate"; then
+    PORT=$candidate
+    break
+  fi
+done
+if [ -z "$PORT" ]; then
+  echo "❌  Could not find a free port in 3000–9999 after 50 tries."
+  exit 1
+fi
+export PORT
 URL="http://localhost:${PORT}"
+
+# Per-launch ID: /api/ping echoes it back, so step 6 can tell this server
+# apart from anything else that might answer on the same port.
+if [ -r /proc/sys/kernel/random/uuid ]; then
+  DLW_LAUNCH_ID="$(cat /proc/sys/kernel/random/uuid)"
+else
+  DLW_LAUNCH_ID="${RANDOM}${RANDOM}${RANDOM}$$"
+fi
+export DLW_LAUNCH_ID
 
 echo "🐬 Dolphin Lite Web — starting"
 echo "────────────────────────────"
@@ -51,9 +80,20 @@ fi
   "$SCRIPT_DIR/server.js" &
 NODEMON_PID=$!
 
-# ── 6. Poll until server is accepting connections ────────────────────────────
+# ── 6. Poll until THIS server answers (matching launch ID), max ~20 s ────────
+WAIT_TIMEOUT=20
 echo -n "  Waiting for server"
-until curl -sf "http://localhost:${PORT}/api/home" >/dev/null 2>&1; do
+deadline=$(( SECONDS + WAIT_TIMEOUT ))
+until [[ "$(curl -sf --max-time 1 "http://localhost:${PORT}/api/ping" 2>/dev/null)" \
+         == *"\"launchId\":\"${DLW_LAUNCH_ID}\""* ]]; do
+  if (( SECONDS >= deadline )); then
+    echo " timed out."
+    echo "❌  Server did not respond on port ${PORT} within ${WAIT_TIMEOUT}s (see output above)."
+    pkill -TERM -P "$NODEMON_PID" 2>/dev/null || true   # node child of nodemon
+    kill -TERM "$NODEMON_PID" 2>/dev/null || true
+    wait "$NODEMON_PID" 2>/dev/null || true
+    exit 1
+  fi
   echo -n "."
   sleep 0.2
 done
@@ -61,6 +101,8 @@ echo " ready."
 echo ""
 
 # ── 7. Launch Chrome ─────────────────────────────────────────────────────────
+# activity-google-chrome is assumed to be a local wrapper around Chrome (not a
+# standard binary); the fallbacks below are used when it is not on PATH.
 CHROME_FLAGS="--app=${URL} --new-window --window-size=${WIN_W},${WIN_H} --window-position=${WIN_X},${WIN_Y}"
 if command -v activity-google-chrome &>/dev/null; then
   activity-google-chrome $CHROME_FLAGS &
@@ -70,8 +112,16 @@ elif command -v google-chrome &>/dev/null; then
 elif command -v chromium-browser &>/dev/null; then
   echo "⚠️  activity-google-chrome not found — falling back to chromium-browser"
   chromium-browser $CHROME_FLAGS &
+elif command -v chromium &>/dev/null; then
+  # Debian, Fedora and Arch name the binary "chromium"
+  echo "⚠️  activity-google-chrome not found — falling back to chromium"
+  chromium $CHROME_FLAGS &
+elif command -v xdg-open &>/dev/null; then
+  # Default browser; no app-window mode or saved geometry
+  echo "⚠️  No Chrome/Chromium found — opening ${URL} in the default browser"
+  xdg-open "$URL" &
 else
-  echo "⚠️  No Chrome launcher found. Open ${URL} manually."
+  echo "⚠️  No browser launcher found. Open ${URL} manually."
 fi
 
 # ── 8. Wait on nodemon (keeps shell occupied; exits when server shuts down) ──

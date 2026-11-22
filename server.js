@@ -116,7 +116,8 @@ function entryInfo(dirPath, entry) {
 
 const START_DIR = process.env.START_DIR || process.cwd();
 
-app.get('/api/ping', (_req, res) => res.json({ ok: true }));
+// launchId lets runme confirm it reached this server, not another one on the port
+app.get('/api/ping', (_req, res) => res.json({ ok: true, launchId: process.env.DLW_LAUNCH_ID || null }));
 
 app.get('/api/home', (_req, res) => {
   res.json({ home: START_DIR, user: os.userInfo().username });
@@ -444,7 +445,7 @@ app.post('/api/settings', (req, res) => {
 // ─── Start ───────────────────────────────────────────────────────────────────
 
 app.listen(PORT, () => {
-  console.log(`\n  🐬 Dolphin File Explorer`);
+  console.log(`\n  🐬 Dolphin Lite Web`);
   console.log(`  ──────────────────────────`);
   console.log(`  Open: http://localhost:${PORT}\n`);
 });
