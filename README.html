@@ -390,11 +390,11 @@ header        { animation: fadeUp .4s ease both; }
     <div class="steps">
       <div class="step">
         <div class="step-num">1</div>
-        <div class="step-note">Run <code>./setmeup</code> — installs Node dependencies and <code>nodemon</code> if needed.</div>
+        <div class="step-note">Run <code>./setmeup</code> — checks for Node.js and npm, and runs <code>npm install</code> (which includes the local <code>nodemon</code> dev dependency) if needed.</div>
       </div>
       <div class="step">
         <div class="step-num">2</div>
-        <div class="step-note">Run <code>./runme</code> — picks a random port, launches Chrome, and starts the server with live-reload.</div>
+        <div class="step-note">Run <code>./runme [dir]</code> — picks a random port, starts the server with live-reload, waits until it answers, then launches Chrome opened at <code>dir</code> (defaults to the current directory).</div>
       </div>
       <div class="step">
         <div class="step-num">3</div>
@@ -421,13 +421,17 @@ header        { animation: fadeUp .4s ease both; }
         <td class="file-type"><span class="pill pill-server">server</span></td>
         <td class="file-desc">
           <strong>Express HTTP server and REST API.</strong>
-          Serves <code>index.html</code> and exposes seven JSON endpoints:
-          <code>/api/home</code> (current user's home directory),
+          Serves <code>index.html</code> and exposes thirteen API endpoints (JSON unless noted):
+          <code>/api/ping</code> (liveness check the page polls so it can close itself if the server goes away),
+          <code>/api/home</code> (the start directory passed by <code>runme</code>, plus the current user name),
           <code>/api/ls</code> (directory listing with sort and hidden-file support),
           <code>/api/places</code> (sidebar locations including auto-detected mount points),
           <code>/api/stat</code> (full metadata for a single path),
           <code>/api/mkdir</code>, <code>/api/rename</code>, <code>/api/delete</code>, <code>/api/copy</code>,
-          and <code>/api/search</code> (recursive filename search up to depth 6).
+          <code>/api/search</code> (recursive filename search up to depth 6),
+          <code>GET /api/watch</code> (Server-Sent Events stream of changes in a folder, via <code>fs.watch</code>),
+          <code>POST /api/shutdown</code> (sent by the page when the window closes; stops the server and its <code>nodemon</code> parent),
+          and <code>GET</code>/<code>POST /api/settings</code> (reads or merges per-directory settings in <code>.dolphin-lite-web.json</code>).
           Reads <code>PORT</code> from the environment so <code>runme</code> can supply a random port.
         </td>
       </tr>
@@ -453,7 +457,8 @@ header        { animation: fadeUp .4s ease both; }
           <strong>One-time (and safe-to-repeat) environment setup.</strong>
           Checks that Node.js and npm are available, runs <code>npm install</code>
           when <code>node_modules/</code> is absent or <code>package.json</code> is newer,
-          and installs <code>nodemon</code> globally if it is missing.
+          and reports the version of the locally installed <code>nodemon</code> dev dependency.
+          It does not install anything globally.
           Always run this first on a fresh checkout.
         </td>
       </tr>
@@ -463,12 +468,15 @@ header        { animation: fadeUp .4s ease both; }
         <td class="file-type"><span class="pill pill-script">script</span></td>
         <td class="file-desc">
           <strong>Development launcher.</strong>
-          Picks a random port in the range 3000–9999, launches
-          <code>activity-google-chrome</code> (with <code>google-chrome</code> and
-          <code>chromium-browser</code> as fallbacks) pointed at
-          <code>http://localhost:&lt;port&gt;</code>, then starts
+          Usage: <code>./runme [dir]</code>. The optional <code>dir</code> sets the start directory
+          (defaults to the directory you run it from). Runs <code>setmeup</code>, picks a random port
+          in the range 3000–9999, and reads saved window size and position from
+          <code>.dolphin-lite-web.json</code> in the start directory, if present. It then starts
           <code>nodemon</code> watching <code>server.js</code> and <code>index.html</code>
-          so the server restarts automatically on any save.
+          so the server restarts automatically on any save, polls <code>/api/home</code> until the
+          server answers, and finally launches <code>activity-google-chrome</code> (with
+          <code>google-chrome</code> and <code>chromium-browser</code> as fallbacks) pointed at
+          <code>http://localhost:&lt;port&gt;</code>.
         </td>
       </tr>
 
@@ -477,7 +485,8 @@ header        { animation: fadeUp .4s ease both; }
         <td class="file-type"><span class="pill pill-config">config</span></td>
         <td class="file-desc">
           <strong>npm project manifest.</strong>
-          Declares the single runtime dependency (<code>express</code>) and the
+          Declares the single runtime dependency (<code>express</code>), the
+          <code>nodemon</code> dev dependency, and the
           <code>npm start</code> script alias for <code>node server.js</code>.
         </td>
       </tr>
@@ -498,8 +507,9 @@ header        { animation: fadeUp .4s ease both; }
         <td class="file-type"><span class="pill pill-config">config</span></td>
         <td class="file-desc">
           <strong>Git exclusion list.</strong>
-          Tells Git to ignore the <code>node_modules/</code> directory so the
-          hundreds of dependency files are never committed to the repository.
+          Tells Git to ignore the <code>node_modules/</code> directory, so the
+          hundreds of dependency files are never committed to the repository, and
+          per-directory <code>.dolphin-lite-web.json</code> settings files.
         </td>
       </tr>
 
